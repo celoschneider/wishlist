@@ -8,51 +8,55 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:transparent;border:none;padding:0;outline:none;cursor:pointer;z-index:1;position:relative}
-input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#e5e7eb}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;margin-top:-5.5px;background:white;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.15);cursor:pointer;transition:transform .12s}
-input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:none;background:white;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.15)}
-.track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:3px;border-radius:2px;background:#0071e3;pointer-events:none;z-index:0}
-.cost-readonly .track-fill{background:#d1d5db}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;border-radius:2px;background:transparent;border:none;padding:0;outline:none;cursor:pointer;z-index:1;position:relative}
+input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:#e5e7eb}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;margin-top:-5px;background:white;border:1.5px solid #d1d5db;cursor:pointer;transition:border-color .12s}
+input[type=range]:hover::-webkit-slider-thumb{border-color:#0071e3}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;border:1.5px solid #d1d5db;background:white}
+.track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:2px;border-radius:2px;background:#0071e3;pointer-events:none;z-index:0}
+.cost-readonly .track-fill{background:#e5e7eb}
 .cost-readonly input[type=range]{pointer-events:none;opacity:0}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;-webkit-appearance:none}
-.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-@keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.anim-fadeup{animation:fadeUp .18s ease both}
-.anim-modal{animation:modalIn .22s cubic-bezier(.34,1.56,.64,1) both}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
+.anim-fadeup{animation:fadeUp .16s ease both}
+.anim-modal{animation:modalIn .2s cubic-bezier(.34,1.4,.64,1) both}
+.spinner{display:inline-block;width:12px;height:12px;border:1.5px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:13px;color:#6b7280;cursor:pointer;transition:all .12s}
+.nav-item:hover{background:#f9fafb;color:#111827}
+.nav-item.active{background:#eff6ff;color:#0071e3;font-weight:600}
+input:focus,select:focus{border-color:#0071e3 !important;outline:none}
 </style>
 </head>
 <body class="h-full bg-gray-50 antialiased" style="font-family:-apple-system,'Helvetica Neue',Arial,sans-serif">
 
 <!-- AUTH -->
 <div id="authScreen" class="fixed inset-0 bg-gray-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-2xl p-8 w-full max-w-sm shadow-xl anim-modal">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#0071e3">
-        <i data-lucide="star" style="width:16px;height:16px;color:white;fill:white"></i>
+  <div class="bg-white rounded-2xl p-8 w-full max-w-sm border border-gray-200 anim-modal">
+    <div class="flex items-center gap-3 mb-7">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#0071e3">
+        <i data-lucide="star" style="width:14px;height:14px;color:white;fill:white"></i>
       </div>
-      <span class="text-base font-bold tracking-tight">Wishlist</span>
+      <span class="text-sm font-bold tracking-tight text-gray-900">Wishlist</span>
     </div>
     <div class="flex bg-gray-100 rounded-lg p-0.5 mb-5">
-      <button id="tab-login" onclick="switchTab('login')" class="flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all">Entrar</button>
-      <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all">Criar conta</button>
+      <button id="tab-login" onclick="switchTab('login')" class="flex-1 text-xs font-semibold py-1.5 rounded-md bg-white text-gray-900 transition-all">Entrar</button>
+      <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 text-xs font-medium py-1.5 rounded-md text-gray-400 transition-all">Criar conta</button>
     </div>
     <div id="auth-login">
-      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">E-mail</label><input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all" style=""></div>
-      <div class="mb-2"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Senha</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <div class="mb-3"><label class="block text-xs font-medium text-gray-500 mb-1.5">E-mail</label><input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
+      <div class="mb-2"><label class="block text-xs font-medium text-gray-500 mb-1.5">Senha</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
       <button onclick="forgotPassword()" class="text-xs block text-right mb-4 hover:underline" style="color:#0071e3">Esqueci minha senha</button>
-      <button id="btn-login" onclick="doLogin()" class="w-full text-sm font-semibold text-white rounded-full py-2.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">Entrar</button>
+      <button id="btn-login" onclick="doLogin()" class="w-full text-sm font-semibold text-white rounded-lg py-2.5 transition-all hover:opacity-90 disabled:opacity-60" style="background:#0071e3">Entrar</button>
     </div>
     <div id="auth-signup" class="hidden">
-      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">E-mail</label><input id="signup-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
-      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Senha</label><input id="signup-pass" type="password" placeholder="mínimo 6 caracteres" autocomplete="new-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
-      <div class="mb-4"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Confirmar senha</label><input id="signup-pass2" type="password" placeholder="repita a senha" autocomplete="new-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
-      <button id="btn-signup" onclick="doSignup()" class="w-full text-sm font-semibold text-white rounded-full py-2.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">Criar conta</button>
+      <div class="mb-3"><label class="block text-xs font-medium text-gray-500 mb-1.5">E-mail</label><input id="signup-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
+      <div class="mb-3"><label class="block text-xs font-medium text-gray-500 mb-1.5">Senha</label><input id="signup-pass" type="password" placeholder="mínimo 6 caracteres" autocomplete="new-password" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
+      <div class="mb-4"><label class="block text-xs font-medium text-gray-500 mb-1.5">Confirmar senha</label><input id="signup-pass2" type="password" placeholder="repita a senha" autocomplete="new-password" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
+      <button id="btn-signup" onclick="doSignup()" class="w-full text-sm font-semibold text-white rounded-lg py-2.5 transition-all hover:opacity-90 disabled:opacity-60" style="background:#0071e3">Criar conta</button>
     </div>
     <div id="auth-error" class="text-xs text-red-500 text-center mt-3 min-h-[18px]"></div>
   </div>
@@ -62,202 +66,214 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div id="appLayout" class="hidden h-screen flex overflow-hidden">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar w-64 min-w-[256px] bg-white border-r border-gray-100 flex flex-col h-screen overflow-y-auto flex-shrink-0">
-    <div class="px-4 py-4 border-b border-gray-100 flex-shrink-0">
+  <aside class="sidebar w-60 min-w-[240px] bg-white border-r border-gray-200 flex flex-col h-screen overflow-y-auto flex-shrink-0">
+    <!-- Logo -->
+    <div class="px-4 pt-5 pb-4 flex-shrink-0">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#0071e3">
-          <i data-lucide="star" style="width:13px;height:13px;color:white;fill:white"></i>
+          <i data-lucide="star" style="width:12px;height:12px;color:white;fill:white"></i>
         </div>
-        <div>
-          <div class="text-sm font-bold tracking-tight leading-none">Wishlist</div>
-          <div class="text-[10px] text-gray-400 leading-none mt-0.5">priorização inteligente</div>
-        </div>
+        <span class="text-sm font-bold tracking-tight text-gray-900">Wishlist</span>
       </div>
     </div>
 
-    <div class="flex-1 px-3 py-4 flex flex-col gap-3">
-      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Novo item</div>
+    <!-- Nav -->
+    <div class="px-3 pb-2 flex-shrink-0">
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-2 mb-1">Menu</p>
+      <div class="nav-item active"><i data-lucide="layout-dashboard" style="width:15px;height:15px"></i>Dashboard</div>
+    </div>
 
-      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nome</label>
-        <input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
+    <div class="h-px bg-gray-100 mx-3 my-2 flex-shrink-0"></div>
+
+    <!-- Form -->
+    <div class="flex-1 px-3 py-2 flex flex-col gap-2.5 overflow-y-auto">
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-2 mt-1">Novo item</p>
+
+      <div><label class="block text-xs font-medium text-gray-500 mb-1">Nome</label>
+        <input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
 
       <div class="grid grid-cols-2 gap-2">
-        <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Categoria</label>
-          <select id="f-cat" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all cursor-pointer">
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">Categoria</label>
+          <select id="f-cat" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs cursor-pointer transition-all">
             <option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option>
           </select></div>
-        <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Custo (R$)</label>
-          <input id="f-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1">Custo (R$)</label>
+          <input id="f-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
       </div>
 
-      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nota / link</label>
-        <input id="f-nota" type="text" placeholder="opcional…" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
+      <div><label class="block text-xs font-medium text-gray-500 mb-1">Nota / link</label>
+        <input id="f-nota" type="text" placeholder="opcional…" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
 
       <div class="h-px bg-gray-100"></div>
 
       <!-- Urgência -->
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Urgência</span>
-          <span id="fb-urg" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+          <span class="text-xs font-medium text-gray-500">Urgência</span>
+          <span id="fb-urg" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
       </div>
 
       <!-- Desejo -->
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Desejo</span>
-          <span id="fb-des" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+          <span class="text-xs font-medium text-gray-500">Desejo</span>
+          <span id="fb-des" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
       </div>
 
       <!-- Impacto -->
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Impacto</span>
-          <span id="fb-imp" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+          <span class="text-xs font-medium text-gray-500">Impacto</span>
+          <span id="fb-imp" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
       </div>
 
       <!-- Peso custo -->
       <div class="flex flex-col gap-1 cost-readonly">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Peso do custo</span>
-          <span id="fb-cst" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-400">—</span>
+          <span class="text-xs font-medium text-gray-500">Peso do custo</span>
+          <span id="fb-cst" class="text-xs font-semibold text-gray-300">—</span>
         </div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-cst" style="width:0%"></div><input type="range" min="1" max="10" value="1" disabled></div>
-        <div class="text-[9px] text-gray-300">calculado pelo valor · penaliza o score</div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-cst" style="width:0%;background:#e5e7eb"></div><input type="range" min="1" max="10" value="1" disabled></div>
+        <div class="text-[10px] text-gray-300">calculado pelo valor · penaliza o score</div>
       </div>
 
-      <div class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[10px] text-gray-400 leading-relaxed">
-        <strong class="text-gray-600">Score</strong> =
-        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Urg×0.35</span>+
-        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Des×0.30</span>+
-        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Imp×0.25</span>−
-        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Cst×0.10</span>
+      <div class="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-[10px] text-gray-400 leading-relaxed">
+        <span class="font-semibold text-gray-500">Score</span> = Urg×0.35 + Des×0.30 + Imp×0.25 − Cst×0.10
       </div>
 
-      <button id="btn-add" onclick="addItem()" class="w-full text-xs font-semibold text-white rounded-full py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">
-        <i data-lucide="plus" style="width:12px;height:12px"></i>Adicionar item
+      <button id="btn-add" onclick="addItem()" class="w-full text-xs font-semibold text-white rounded-lg py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-60" style="background:#0071e3">
+        <i data-lucide="plus" style="width:13px;height:13px"></i>Adicionar item
       </button>
-      <button onclick="resetForm()" class="w-full text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-full py-2 flex items-center justify-center gap-1.5 transition-all">
-        <i data-lucide="x-circle" style="width:12px;height:12px"></i>Limpar campos
+      <button onclick="resetForm()" class="w-full text-xs font-medium text-gray-500 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg py-2 flex items-center justify-center gap-1.5 transition-all">
+        <i data-lucide="x" style="width:12px;height:12px"></i>Limpar
       </button>
     </div>
 
+    <!-- Footer -->
     <div class="px-3 py-3 border-t border-gray-100 flex-shrink-0">
-      <div class="flex items-center gap-2 px-1 mb-3">
-        <div id="userAvatar" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:rgba(0,113,227,.1);color:#0071e3">?</div>
-        <div id="userEmail" class="text-xs text-gray-400 flex-1 min-w-0 truncate">—</div>
-        <button onclick="doSignout()" title="Sair" class="flex items-center text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
-          <i data-lucide="log-out" style="width:13px;height:13px"></i>
-        </button>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-2 mb-2">Perfil</p>
+      <div class="flex items-center gap-2.5 px-2 mb-3">
+        <div id="userAvatar" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-blue-50 text-blue-600">?</div>
+        <div id="userEmail" class="text-xs text-gray-500 flex-1 min-w-0 truncate">—</div>
       </div>
-      <div class="grid grid-cols-2 gap-1.5">
-        <button onclick="exportJSON()" class="flex items-center justify-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg py-1.5 transition-all">
-          <i data-lucide="upload" style="width:12px;height:12px"></i>Exportar
-        </button>
-        <button onclick="importJSON()" class="flex items-center justify-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg py-1.5 transition-all">
-          <i data-lucide="download" style="width:12px;height:12px"></i>Importar
-        </button>
-      </div>
-      <div id="lastUpdated" class="text-[10px] text-gray-300 text-center mt-2">—</div>
+      <div class="nav-item" onclick="exportJSON()"><i data-lucide="upload" style="width:14px;height:14px"></i>Exportar</div>
+      <div class="nav-item" onclick="importJSON()"><i data-lucide="download" style="width:14px;height:14px"></i>Importar</div>
+      <div class="nav-item text-red-400 hover:text-red-600" style="color:#f87171" onclick="doSignout()"><i data-lucide="log-out" style="width:14px;height:14px"></i>Sair</div>
+      <div id="lastUpdated" class="text-[10px] text-gray-300 px-2 mt-2">—</div>
     </div>
   </aside>
 
   <!-- MAIN -->
-  <main class="flex-1 min-w-0 h-screen overflow-y-auto flex flex-col bg-gray-50">
-    <div class="bg-white border-b border-gray-100 px-6 h-12 flex items-center justify-between flex-shrink-0">
+  <main class="flex-1 min-w-0 h-screen overflow-y-auto flex flex-col">
+    <!-- Topbar -->
+    <div class="bg-white border-b border-gray-200 px-8 h-14 flex items-center justify-between flex-shrink-0">
       <div class="text-sm text-gray-400">Páginas / <strong class="text-gray-900 font-semibold">Dashboard</strong></div>
-      <div id="topbarDate" class="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1">—</div>
+      <div id="topbarDate" class="text-xs text-gray-400">—</div>
     </div>
 
-    <div class="p-6 flex flex-col gap-5">
-      <div class="text-sm font-bold text-gray-900">Visão geral</div>
+    <div class="p-8 flex flex-col gap-8">
+
+      <!-- Section header -->
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-900">Visão geral</h1>
+        <div class="flex items-center gap-2">
+          <button onclick="exportJSON()" class="flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg px-3 py-1.5 transition-all">
+            <i data-lucide="upload" style="width:12px;height:12px"></i>Exportar
+          </button>
+        </div>
+      </div>
 
       <!-- KPIs -->
-      <div class="grid grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(0,113,227,.1)">
-            <i data-lucide="target" style="width:16px;height:16px;color:#0071e3"></i>
+      <div class="grid grid-cols-4 gap-5">
+        <div class="bg-white rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="target" style="width:14px;height:14px;color:#9ca3af"></i>
+            <span class="text-xs font-medium text-gray-400">Itens ativos</span>
           </div>
-          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Itens ativos</div>
-          <div id="k-ativos" class="text-2xl font-bold tracking-tight mt-1" style="color:#0071e3">—</div>
-          <div id="k-ativos-sub" class="text-xs text-gray-400 mt-0.5">—</div>
+          <div id="k-ativos" class="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1.5">—</div>
+          <div id="k-ativos-sub" class="text-xs text-gray-400">—</div>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(255,149,0,.1)">
-            <i data-lucide="wallet" style="width:16px;height:16px;color:rgb(255,149,0)"></i>
+        <div class="bg-white rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="wallet" style="width:14px;height:14px;color:#9ca3af"></i>
+            <span class="text-xs font-medium text-gray-400">Custo total</span>
           </div>
-          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Custo total</div>
-          <div id="k-custo" class="text-base font-bold tracking-tight mt-1 text-gray-900">—</div>
-          <div id="k-custo-sub" class="text-xs text-gray-400 mt-0.5">—</div>
+          <div id="k-custo" class="text-2xl font-bold text-gray-900 tracking-tight leading-none mb-1.5">—</div>
+          <div id="k-custo-sub" class="text-xs text-gray-400">—</div>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(52,199,89,.1)">
-            <i data-lucide="trophy" style="width:16px;height:16px;color:rgb(52,199,89)"></i>
+        <div class="bg-white rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="trophy" style="width:14px;height:14px;color:#9ca3af"></i>
+            <span class="text-xs font-medium text-gray-400">Top prioridade</span>
           </div>
-          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Top prioridade</div>
-          <div id="k-topscore" class="text-xl font-bold tracking-tight mt-1" style="color:#0071e3">—</div>
-          <div id="k-topname" class="text-xs text-gray-400 mt-0.5 truncate">—</div>
+          <div id="k-topscore" class="text-3xl font-bold tracking-tight leading-none mb-1.5" style="color:#0071e3">—</div>
+          <div id="k-topname" class="text-xs text-gray-400 truncate">—</div>
         </div>
-        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(88,86,214,.1)">
-            <i data-lucide="bar-chart-2" style="width:16px;height:16px;color:rgb(88,86,214)"></i>
+        <div class="bg-white rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-3">
+            <i data-lucide="bar-chart-2" style="width:14px;height:14px;color:#9ca3af"></i>
+            <span class="text-xs font-medium text-gray-400">Score médio</span>
           </div>
-          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Score médio</div>
-          <div id="k-avg" class="text-2xl font-bold tracking-tight mt-1 text-gray-900">—</div>
-          <div class="text-xs text-gray-400 mt-0.5">dos itens pendentes</div>
+          <div id="k-avg" class="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1.5">—</div>
+          <div class="text-xs text-gray-400">dos itens pendentes</div>
         </div>
       </div>
 
       <!-- Charts -->
-      <div class="grid gap-4" style="grid-template-columns:1.6fr 1fr">
-        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="text-sm font-bold text-gray-900 mb-0.5">Score por item</div>
-          <div class="text-xs text-gray-400 mb-4">ranking de prioridade calculado</div>
-          <svg id="bar-chart" style="width:100%;height:130px;overflow:visible"></svg>
+      <div class="grid gap-5" style="grid-template-columns:1.7fr 1fr">
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <div class="mb-1 text-sm font-semibold text-gray-900">Score por item</div>
+          <div class="text-xs text-gray-400 mb-5">ranking de prioridade calculado</div>
+          <svg id="bar-chart" style="width:100%;height:120px;overflow:visible"></svg>
         </div>
-        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-          <div class="text-sm font-bold text-gray-900 mb-0.5">Por categoria</div>
-          <div class="text-xs text-gray-400 mb-4">distribuição de itens ativos</div>
-          <div class="flex items-center gap-4">
-            <svg id="donut-chart" width="96" height="96" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
-            <div id="donut-legend" class="flex flex-col gap-1.5 flex-1 min-w-0"></div>
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <div class="mb-1 text-sm font-semibold text-gray-900">Por categoria</div>
+          <div class="text-xs text-gray-400 mb-5">distribuição de itens ativos</div>
+          <div class="flex items-center gap-5">
+            <svg id="donut-chart" width="88" height="88" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
+            <div id="donut-legend" class="flex flex-col gap-2 flex-1 min-w-0"></div>
           </div>
         </div>
       </div>
 
       <!-- List -->
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="flex items-center px-5 py-3.5 border-b border-gray-100 gap-3 flex-wrap">
-          <span class="text-sm font-bold text-gray-900">Itens da wishlist</span>
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <!-- List header -->
+        <div class="flex items-center px-6 py-4 border-b border-gray-100 gap-4 flex-wrap">
+          <span class="text-sm font-semibold text-gray-900">Itens da wishlist</span>
           <div class="ml-auto flex items-center gap-3 flex-wrap">
+            <!-- Sort -->
             <div class="flex bg-gray-100 rounded-lg p-0.5">
-              <button class="seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-900 transition-all" data-sort="score" onclick="setSort('score')">Score</button>
+              <button class="seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white text-gray-900 transition-all" data-sort="score" onclick="setSort('score')">Score</button>
               <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="urgencia" onclick="setSort('urgencia')">Urgência</button>
               <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="custo-asc" onclick="setSort('custo-asc')">Custo ↑</button>
               <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="custo-desc" onclick="setSort('custo-desc')">Custo ↓</button>
               <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="nome" onclick="setSort('nome')">A–Z</button>
             </div>
+            <!-- Toggle adquiridos -->
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <div class="relative w-8 h-4">
                 <input type="checkbox" id="showAcq" onchange="render()" class="peer sr-only">
-                <div class="absolute inset-0 rounded-full bg-gray-200 peer-checked:bg-green-500 transition-colors cursor-pointer"></div>
-                <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 pointer-events-none"></div>
+                <div class="absolute inset-0 rounded-full bg-gray-200 peer-checked:bg-blue-500 transition-colors cursor-pointer"></div>
+                <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4 pointer-events-none"></div>
               </div>
               <span class="text-xs text-gray-500">Adquiridos</span>
             </label>
           </div>
         </div>
+        <!-- Tabs -->
         <div id="tab-row" class="flex overflow-x-auto border-b border-gray-100 px-4"></div>
-        <div class="grid px-5 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide bg-gray-50 border-b border-gray-100" style="grid-template-columns:28px 1fr 76px 38px 38px 38px 90px 64px;gap:8px">
+        <!-- Col headers -->
+        <div class="grid px-6 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide bg-gray-50 border-b border-gray-100" style="grid-template-columns:24px 1fr 80px 36px 36px 36px 96px 72px;gap:12px">
           <div>#</div><div>Item</div><div>Categoria</div><div>Urg.</div><div>Des.</div><div>Imp.</div><div>Score</div><div></div>
         </div>
         <div id="list"></div>
@@ -266,45 +282,45 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </main>
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.25);backdrop-filter:blur(8px)">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl anim-modal">
-    <h2 class="text-base font-bold tracking-tight mb-4">Editar item</h2>
-    <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nome</label><input id="e-nome" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+<!-- MODAL EDIT -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.2);backdrop-filter:blur(6px)">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200 anim-modal">
+    <h2 class="text-base font-bold text-gray-900 mb-5">Editar item</h2>
+    <div class="mb-3"><label class="block text-xs font-medium text-gray-500 mb-1.5">Nome</label><input id="e-nome" type="text" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
     <div class="grid grid-cols-2 gap-3 mb-3">
-      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Categoria</label>
-        <select id="e-cat" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all cursor-pointer">
+      <div><label class="block text-xs font-medium text-gray-500 mb-1.5">Categoria</label>
+        <select id="e-cat" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer transition-all">
           <option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option>
         </select></div>
-      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Custo (R$)</label><input id="e-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <div><label class="block text-xs font-medium text-gray-500 mb-1.5">Custo (R$)</label><input id="e-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
     </div>
-    <div class="mb-4"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nota / link</label><input id="e-nota" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
-    <div class="h-px bg-gray-100 mb-4"></div>
-    <div class="grid grid-cols-2 gap-4 mb-2">
+    <div class="mb-5"><label class="block text-xs font-medium text-gray-500 mb-1.5">Nota / link</label><input id="e-nota" type="text" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
+    <div class="h-px bg-gray-100 mb-5"></div>
+    <div class="grid grid-cols-2 gap-5 mb-2">
       <div class="flex flex-col gap-1">
-        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Urgência</span><span id="eb-urg" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-urg" style="width:44.4%"></div><input type="range" id="e-urgencia" min="1" max="10" value="5" oninput="syncSlider('e','urg',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span>pode esperar</span><span>moderada</span><span>preciso logo</span></div>
+        <div class="flex items-center justify-between"><span class="text-xs font-medium text-gray-500">Urgência</span><span id="eb-urg" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ef-urg" style="width:44.4%"></div><input type="range" id="e-urgencia" min="1" max="10" value="5" oninput="syncSlider('e','urg',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span>pode esperar</span><span>preciso logo</span></div>
       </div>
       <div class="flex flex-col gap-1">
-        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Desejo</span><span id="eb-des" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-des" style="width:44.4%"></div><input type="range" id="e-desejo" min="1" max="10" value="5" oninput="syncSlider('e','des',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span>seria legal</span><span>quero muito</span><span>preciso disso</span></div>
+        <div class="flex items-center justify-between"><span class="text-xs font-medium text-gray-500">Desejo</span><span id="eb-des" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ef-des" style="width:44.4%"></div><input type="range" id="e-desejo" min="1" max="10" value="5" oninput="syncSlider('e','des',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span>seria legal</span><span>preciso disso</span></div>
       </div>
       <div class="flex flex-col gap-1 col-span-2">
-        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Impacto na rotina</span><span id="eb-imp" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
-        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-imp" style="width:44.4%"></div><input type="range" id="e-impacto" min="1" max="10" value="5" oninput="syncSlider('e','imp',this.value)"></div>
-        <div class="flex justify-between text-[9px] text-gray-300"><span>cosmético</span><span>melhora muito</span><span>muda o jogo</span></div>
+        <div class="flex items-center justify-between"><span class="text-xs font-medium text-gray-500">Impacto na rotina</span><span id="eb-imp" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span></div>
+        <div class="relative h-3 flex items-center"><div class="track-fill" id="ef-imp" style="width:44.4%"></div><input type="range" id="e-impacto" min="1" max="10" value="5" oninput="syncSlider('e','imp',this.value)"></div>
+        <div class="flex justify-between text-[10px] text-gray-300"><span>cosmético</span><span>muda o jogo</span></div>
       </div>
     </div>
-    <div class="flex justify-end gap-2 mt-5">
-      <button onclick="closeModal()" class="text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 transition-all">Cancelar</button>
-      <button onclick="saveEdit()" class="text-sm font-semibold text-white rounded-full px-5 py-2 transition-all hover:opacity-90" style="background:#0071e3">Salvar</button>
+    <div class="flex justify-end gap-2 mt-6">
+      <button onclick="closeModal()" class="text-sm font-medium text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg px-4 py-2 transition-all">Cancelar</button>
+      <button onclick="saveEdit()" class="text-sm font-semibold text-white rounded-lg px-5 py-2 transition-all hover:opacity-90" style="background:#0071e3">Salvar</button>
     </div>
   </div>
 </div>
 
-<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none whitespace-nowrap transition-all duration-200 bg-gray-900"></div>
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 text-white text-xs font-medium px-4 py-2 rounded-lg z-50 pointer-events-none whitespace-nowrap transition-all duration-200 bg-gray-900"></div>
 
 <script>
 const SUPA_URL = 'https://xvadsszlynogdurxqwhr.supabase.co';
@@ -315,15 +331,15 @@ const sb = createClient(SUPA_URL, SUPA_KEY);
 let items = [], filter = 'Todos', sort = 'score', editId = null, currentUser = null;
 
 const CAT = {
-  Tech:{bg:'#e8f0fb',color:'#1a56c4'}, Casa:{bg:'#e8f5ec',color:'#1a7a3a'},
-  Vestuário:{bg:'#fce8f3',color:'#c41a7a'}, Saúde:{bg:'#fff0e6',color:'#c46a1a'},
-  Lazer:{bg:'#f0e8fc',color:'#7a1ac4'}, Trabalho:{bg:'#f0f0f0',color:'#555'},
-  Áudio:{bg:'#fdf5e6',color:'#a07020'}, Esporte:{bg:'#e6faf7',color:'#1a8070'},
-  Outro:{bg:'#f5f5f5',color:'#888'},
+  Tech:{bg:'#eff6ff',color:'#2563eb'}, Casa:{bg:'#f0fdf4',color:'#16a34a'},
+  Vestuário:{bg:'#fdf2f8',color:'#c026d3'}, Saúde:{bg:'#fff7ed',color:'#ea580c'},
+  Lazer:{bg:'#f5f3ff',color:'#7c3aed'}, Trabalho:{bg:'#f8fafc',color:'#475569'},
+  Áudio:{bg:'#fffbeb',color:'#d97706'}, Esporte:{bg:'#ecfdf5',color:'#059669'},
+  Outro:{bg:'#f9fafb',color:'#6b7280'},
 };
-const DONUT_COLORS = ['#0071e3','#34c759','#ff9500','#ff3b30','#5856d6','#30b0c7','#ffcc00','#8e8e93'];
+const DONUT_COLORS = ['#0071e3','#34c759','#ff9500','#5856d6','#ff3b30','#30b0c7','#ffcc00','#8e8e93'];
 
-// ══ CURRENCY ══
+// ── CURRENCY ──
 function fmtCurrencyInput(e) {
   const raw = e.target.value.replace(/\D/g, '');
   if (!raw) { e.target.value = ''; return; }
@@ -336,17 +352,13 @@ function setCurrencyVal(el, num) {
   el.value = num ? num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 }
 
-// ══ AUTH ══
+// ── AUTH ──
 function switchTab(t) {
   document.getElementById('auth-login').classList.toggle('hidden', t !== 'login');
   document.getElementById('auth-signup').classList.toggle('hidden', t !== 'signup');
   const tl = document.getElementById('tab-login'), ts = document.getElementById('tab-signup');
-  tl.className = t === 'login'
-    ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all'
-    : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all';
-  ts.className = t === 'signup'
-    ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all'
-    : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all';
+  tl.className = t === 'login' ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white text-gray-900 transition-all' : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-400 transition-all';
+  ts.className = t === 'signup' ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white text-gray-900 transition-all' : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-400 transition-all';
   document.getElementById('auth-error').textContent = '';
 }
 function setAuthLoading(id, loading) {
@@ -390,7 +402,7 @@ function translateAuthError(msg) {
   return msg;
 }
 
-// ══ SESSION ══
+// ── SESSION ──
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
@@ -400,7 +412,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('userEmail').textContent = email;
     document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
     document.getElementById('topbarDate').textContent =
-      new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+      new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     initSliders();
     await loadItems();
   } else {
@@ -410,7 +422,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// ══ SCORE ══
+// ── SCORE ──
 function costPeso(c) {
   if (!c || c <= 0) return 0;
   if (c < 100) return 1; if (c < 300) return 2; if (c < 600) return 3;
@@ -420,12 +432,12 @@ function costPeso(c) {
 }
 function calcScore(it) { return Math.max(0, it.urgencia * 0.35 + it.desejo * 0.30 + it.impacto * 0.25 - costPeso(it.custo) * 0.10); }
 
-// ══ SLIDERS ══
+// ── SLIDERS ──
 function initSliders() { ['urg', 'des', 'imp'].forEach(k => syncSlider('f', k, 5)); }
 function syncSlider(px, key, val) {
   val = parseInt(val);
   const b = document.getElementById(px + 'b-' + key);
-  if (b) b.innerHTML = val + '<span class="font-normal text-gray-400">/10</span>';
+  if (b) b.innerHTML = val + '<span class="text-gray-300 font-normal">/10</span>';
   const f = document.getElementById(px + 'f-' + key);
   if (f) f.style.width = ((val - 1) / 9 * 100) + '%';
   if (px === 'f') {
@@ -439,11 +451,11 @@ function syncSlider(px, key, val) {
 function syncCostSlider() {
   const c = getCurrencyVal(document.getElementById('f-custo')), p = costPeso(c);
   const b = document.getElementById('fb-cst'), f = document.getElementById('ff-cst');
-  if (p === 0) { b.innerHTML = '—'; b.style.cssText = ''; b.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-400'; f.style.width = '0%'; }
-  else { b.innerHTML = p + '<span class="font-normal text-gray-400">/10</span>'; b.style.background = 'rgba(0,113,227,.08)'; b.style.color = '#0071e3'; f.style.width = ((p - 1) / 9 * 100) + '%'; }
+  if (p === 0) { b.innerHTML = '—'; b.style.color = '#d1d5db'; f.style.width = '0%'; }
+  else { b.innerHTML = p + '<span class="text-gray-300 font-normal">/10</span>'; b.style.color = '#0071e3'; f.style.width = ((p - 1) / 9 * 100) + '%'; f.style.background = '#0071e3'; }
 }
 
-// ══ CRUD ══
+// ── CRUD ──
 async function loadItems() {
   document.getElementById('list').innerHTML = '<div class="text-center py-10 text-sm text-gray-400">Carregando…</div>';
   const { data, error } = await sb.from('items').select('*').order('created_at', { ascending: false });
@@ -455,7 +467,7 @@ async function addItem() {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { document.getElementById('f-nome').focus(); return; }
   const btn = document.getElementById('btn-add');
-  const btnOrig = '<i data-lucide="plus" style="width:12px;height:12px"></i>Adicionar item';
+  const btnOrig = '<i data-lucide="plus" style="width:13px;height:13px"></i>Adicionar item';
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Salvando…';
   try {
     const { data, error } = await sb.from('items').insert({
@@ -522,7 +534,7 @@ async function saveEdit() {
   Object.assign(it, update); closeModal(); render(); updateLastUpdated(); toast('Item atualizado ✓');
 }
 
-// ══ EXPORT / IMPORT ══
+// ── EXPORT / IMPORT ──
 function exportJSON() {
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' })), download: 'wishlist-' + new Date().toISOString().slice(0, 10) + '.json' });
   a.click(); toast('Backup exportado ✓');
@@ -547,14 +559,14 @@ async function importJSON() {
   inp.click();
 }
 
-// ══ FILTER / SORT ══
+// ── FILTER / SORT ──
 function setFilter(cat) {
   filter = cat;
   document.querySelectorAll('.tab-btn').forEach(b => {
     const a = b.dataset.cat === cat;
     b.style.color = a ? '#0071e3' : '#6b7280';
     b.style.borderBottomColor = a ? '#0071e3' : 'transparent';
-    b.style.fontWeight = a ? '600' : '500';
+    b.style.fontWeight = a ? '600' : '400';
   });
   render();
 }
@@ -563,12 +575,11 @@ function setSort(s) {
   document.querySelectorAll('.seg-btn').forEach(b => {
     const a = b.dataset.sort === s;
     b.className = a
-      ? 'seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-900 transition-all'
+      ? 'seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white text-gray-900 transition-all'
       : 'seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all';
   });
   render();
 }
-
 function resetForm() {
   ['f-nome', 'f-nota'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-custo').value = '';
@@ -576,18 +587,20 @@ function resetForm() {
   ['urg', 'des', 'imp'].forEach(k => syncSlider('f', k, 5)); syncCostSlider();
 }
 
-// ══ CHARTS ══
+// ── CHARTS ──
 function drawBarChart(data) {
   const svg = document.getElementById('bar-chart'); if (!data.length) { svg.innerHTML = ''; return; }
-  const W = Math.max(200, svg.parentElement.clientWidth - 36), H = 120;
+  const W = Math.max(200, svg.parentElement.clientWidth - 24), H = 110;
   const maxV = Math.max(...data.map(d => d.value), 0.1);
-  const n = data.length, barW = Math.max(8, Math.min(34, (W - n * 6) / n)), gap = (W - n * barW) / (n + 1), labelH = 26, chartH = H - labelH;
+  const n = data.length, barW = Math.max(8, Math.min(32, (W - n * 6) / n));
+  const gap = (W - n * barW) / (n + 1), labelH = 24, chartH = H - labelH;
   let bars = '', labels = '';
   data.forEach((d, i) => {
-    const x = gap + i * (barW + gap), bh = Math.max(3, (d.value / maxV) * (chartH - 10)), y = chartH - bh, isTop = i === 0;
-    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${isTop ? '#0071e3' : 'rgba(0,113,227,.2)'}"/>`;
-    bars += `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" font-size="8" fill="${isTop ? '#0071e3' : '#9ca3af'}" font-family="-apple-system,Helvetica Neue,Arial" font-weight="600">${d.value.toFixed(1)}</text>`;
-    labels += `<text x="${x + barW / 2}" y="${H - 3}" text-anchor="middle" font-size="7.5" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">${d.label.length > 9 ? d.label.slice(0, 8) + '…' : d.label}</text>`;
+    const x = gap + i * (barW + gap), bh = Math.max(3, (d.value / maxV) * (chartH - 12)), y = chartH - bh, isTop = i === 0;
+    const fill = isTop ? '#0071e3' : `rgba(0,113,227,${0.12 + i * 0.01})`;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${fill}"/>`;
+    bars += `<text x="${x + barW / 2}" y="${y - 5}" text-anchor="middle" font-size="8" fill="${isTop ? '#0071e3' : '#9ca3af'}" font-family="-apple-system,Helvetica Neue,Arial" font-weight="${isTop ? '700' : '500'}">${d.value.toFixed(1)}</text>`;
+    labels += `<text x="${x + barW / 2}" y="${H}" text-anchor="middle" font-size="7.5" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">${d.label.length > 9 ? d.label.slice(0, 8) + '…' : d.label}</text>`;
   });
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = `<line x1="0" y1="${chartH}" x2="${W}" y2="${chartH}" stroke="#f3f4f6" stroke-width="1"/>${bars}${labels}`;
@@ -596,7 +609,7 @@ function drawBarChart(data) {
 function drawDonut(data) {
   const svg = document.getElementById('donut-chart'), legend = document.getElementById('donut-legend');
   if (!data.length) { svg.innerHTML = ''; legend.innerHTML = ''; return; }
-  const total = data.reduce((s, d) => s + d.value, 0), cx = 50, cy = 50, r = 38, inner = 26;
+  const total = data.reduce((s, d) => s + d.value, 0), cx = 50, cy = 50, r = 38, inner = 27;
   let start = -Math.PI / 2, paths = '';
   data.forEach(d => {
     const angle = (d.value / total) * Math.PI * 2, end = start + angle;
@@ -604,27 +617,28 @@ function drawDonut(data) {
     const [x2, y2] = [cx + r * Math.cos(end), cy + r * Math.sin(end)];
     const [ix1, iy1] = [cx + inner * Math.cos(start), cy + inner * Math.sin(start)];
     const [ix2, iy2] = [cx + inner * Math.cos(end), cy + inner * Math.sin(end)];
-    paths += `<path d="M${x1},${y1} A${r},${r} 0 ${angle > Math.PI ? 1 : 0} 1 ${x2},${y2} L${ix2},${iy2} A${inner},${inner} 0 ${angle > Math.PI ? 1 : 0} 0 ${ix1},${iy1} Z" fill="${d.color}" opacity=".9"/>`;
+    paths += `<path d="M${x1},${y1} A${r},${r} 0 ${angle > Math.PI ? 1 : 0} 1 ${x2},${y2} L${ix2},${iy2} A${inner},${inner} 0 ${angle > Math.PI ? 1 : 0} 0 ${ix1},${iy1} Z" fill="${d.color}"/>`;
     start = end;
   });
-  svg.innerHTML = paths + `<text x="50" y="47" text-anchor="middle" font-size="13" font-weight="700" fill="#111827" font-family="-apple-system,Helvetica Neue,Arial">${total}</text><text x="50" y="57" text-anchor="middle" font-size="7" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">itens</text>`;
-  legend.innerHTML = data.slice(0, 5).map(d => `<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${d.color}"></div><span class="text-[11px] text-gray-600 truncate flex-1">${d.label}</span><span class="text-[11px] font-semibold text-gray-900">${d.value}</span></div>`).join('');
+  svg.innerHTML = paths + `<text x="50" y="47" text-anchor="middle" font-size="14" font-weight="700" fill="#111827" font-family="-apple-system,Helvetica Neue,Arial">${total}</text><text x="50" y="58" text-anchor="middle" font-size="7" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">itens</text>`;
+  legend.innerHTML = data.slice(0, 5).map(d => `<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${d.color}"></div><span class="text-xs text-gray-500 flex-1 truncate">${d.label}</span><span class="text-xs font-semibold text-gray-700">${d.value}</span></div>`).join('');
 }
 
-// ══ TABS ══
+// ── TABS ──
 function updateTabs() {
   const cats = [...new Set(items.map(i => i.categoria))].sort();
   const allCount = items.filter(i => !i.acquired).length;
-  let html = `<button class="tab-btn text-xs py-2.5 px-3 border-b-2 whitespace-nowrap transition-all" data-cat="Todos" onclick="setFilter('Todos')" style="color:#0071e3;border-bottom-color:#0071e3;font-weight:600">Todos <span class="inline-flex items-center justify-center text-white text-[9px] font-bold rounded-full px-1.5 ml-0.5" style="background:#0071e3;min-width:16px">${allCount}</span></button>`;
+  const isAll = filter === 'Todos';
+  let html = `<button class="tab-btn text-xs py-3 px-4 border-b-2 whitespace-nowrap transition-all" data-cat="Todos" onclick="setFilter('Todos')" style="color:${isAll ? '#0071e3' : '#6b7280'};border-bottom-color:${isAll ? '#0071e3' : 'transparent'};font-weight:${isAll ? '600' : '400'}">Todos <span class="inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 ml-1" style="background:${isAll ? '#0071e3' : '#e5e7eb'};color:${isAll ? 'white' : '#6b7280'};min-width:16px">${allCount}</span></button>`;
   cats.forEach(cat => {
     const n = items.filter(i => i.categoria === cat && !i.acquired).length;
     const a = filter === cat;
-    html += `<button class="tab-btn text-xs py-2.5 px-3 border-b-2 whitespace-nowrap transition-all" data-cat="${cat}" onclick="setFilter('${cat}')" style="color:${a ? '#0071e3' : '#6b7280'};border-bottom-color:${a ? '#0071e3' : 'transparent'};font-weight:${a ? '600' : '500'}">${cat} <span class="inline-flex items-center justify-center text-white text-[9px] font-bold rounded-full px-1.5 ml-0.5" style="background:${n ? '#0071e3' : '#d1d5db'};min-width:16px">${n}</span></button>`;
+    html += `<button class="tab-btn text-xs py-3 px-4 border-b-2 whitespace-nowrap transition-all" data-cat="${cat}" onclick="setFilter('${cat}')" style="color:${a ? '#0071e3' : '#6b7280'};border-bottom-color:${a ? '#0071e3' : 'transparent'};font-weight:${a ? '600' : '400'}">${cat} <span class="inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 ml-1" style="background:${a ? '#0071e3' : '#e5e7eb'};color:${a ? 'white' : '#6b7280'};min-width:16px">${n}</span></button>`;
   });
   document.getElementById('tab-row').innerHTML = html;
 }
 
-// ══ RENDER ══
+// ── RENDER ──
 function render() {
   const showAcq = document.getElementById('showAcq').checked;
   let list = items.filter(i => (!showAcq && i.acquired) ? false : !(filter !== 'Todos' && i.categoria !== filter));
@@ -638,11 +652,11 @@ function render() {
   const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
 
   document.getElementById('k-ativos').textContent = active.length;
-  document.getElementById('k-ativos-sub').innerHTML = `<span style="color:rgb(255,149,0);font-weight:600">${acq.length}</span> adquiridos`;
+  document.getElementById('k-ativos-sub').innerHTML = `<span style="color:#f59e0b;font-weight:600">${acq.length}</span> adquiridos`;
   document.getElementById('k-custo').textContent = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
   document.getElementById('k-custo-sub').textContent = active.length + ' itens pendentes';
   document.getElementById('k-topscore').textContent = topItem ? calcScore(topItem).toFixed(2) : '—';
-  document.getElementById('k-topname').textContent = topItem ? topItem.nome.slice(0, 22) + (topItem.nome.length > 22 ? '…' : '') : '—';
+  document.getElementById('k-topname').textContent = topItem ? topItem.nome.slice(0, 24) + (topItem.nome.length > 24 ? '…' : '') : '—';
   document.getElementById('k-avg').textContent = scores.length ? avg.toFixed(2) : '—';
 
   setTimeout(() => drawBarChart([...active].sort((a, b) => calcScore(b) - calcScore(a)).slice(0, 8).map(it => ({ label: it.nome, value: calcScore(it) }))), 0);
@@ -651,29 +665,31 @@ function render() {
   updateTabs();
 
   const container = document.getElementById('list');
-  if (!list.length) { container.innerHTML = `<div class="text-center py-12 text-sm text-gray-400">${items.length === 0 ? 'Nenhum item ainda. Adicione na barra lateral.' : 'Nenhum item para este filtro.'}</div>`; return; }
+  if (!list.length) {
+    container.innerHTML = `<div class="text-center py-14 text-sm text-gray-400">${items.length === 0 ? 'Nenhum item ainda. Adicione na barra lateral.' : 'Nenhum item para este filtro.'}</div>`;
+    return;
+  }
 
   container.innerHTML = list.map((it, idx) => {
     const score = calcScore(it), cc = CAT[it.categoria] || CAT['Outro'], cp = costPeso(it.custo), isTop = idx === 0 && !it.acquired;
-    return `<div class="grid px-5 py-2.5 border-b border-gray-50 items-center hover:bg-gray-50 transition-colors anim-fadeup ${it.acquired ? 'opacity-40' : ''}" style="grid-template-columns:28px 1fr 76px 38px 38px 38px 90px 64px;gap:8px;animation-delay:${idx * 0.022}s">
-      <div class="text-xs font-bold text-center" style="color:${isTop ? '#0071e3' : '#d1d5db'}">${it.acquired ? '✓' : idx + 1}</div>
+    return `<div class="grid px-6 py-3 border-b border-gray-50 items-center hover:bg-gray-50 transition-colors anim-fadeup ${it.acquired ? 'opacity-40' : ''}" style="grid-template-columns:24px 1fr 80px 36px 36px 36px 96px 72px;gap:12px;animation-delay:${Math.min(idx * 0.02, 0.3)}s">
+      <div class="text-xs font-bold text-center" style="color:${isTop ? '#0071e3' : '#e5e7eb'}">${it.acquired ? '✓' : idx + 1}</div>
       <div class="min-w-0 overflow-hidden">
-        <div class="text-xs font-medium truncate ${it.acquired ? 'line-through text-gray-400' : 'text-gray-900'}">${h(it.nome)}</div>
-        ${it.nota ? `<div class="text-[10px] text-gray-400 truncate mt-0.5">${h(it.nota)}</div>` : ''}
+        <div class="text-sm font-medium truncate ${it.acquired ? 'line-through text-gray-400' : 'text-gray-900'}">${h(it.nome)}</div>
+        ${it.nota ? `<div class="text-xs text-gray-400 truncate mt-0.5">${h(it.nota)}</div>` : ''}
       </div>
-      <div><span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style="background:${cc.bg};color:${cc.color}">${it.categoria}</span></div>
-      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.urgencia}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.urgencia * 10}%;background:rgba(0,113,227,.7)"></div></div></div>
-      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.desejo}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.desejo * 10}%;background:rgba(0,113,227,.5)"></div></div></div>
-      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.impacto}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.impacto * 10}%;background:rgba(0,113,227,.35)"></div></div></div>
-      <div class="flex flex-col gap-0.5">
-        <span class="text-sm font-bold tracking-tight" style="color:#0071e3">${score.toFixed(2)}</span>
-        <span class="text-[10px] text-gray-400">${it.custo ? 'R$ ' + it.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + (cp ? ' · p' + cp : '') : '—'}</span>
-        <div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${Math.min(100, score / 10 * 100)}%;background:#0071e3"></div></div>
+      <div><span class="text-[11px] font-medium px-2 py-0.5 rounded-md" style="background:${cc.bg};color:${cc.color}">${it.categoria}</span></div>
+      <div class="flex flex-col items-center gap-1"><span class="text-xs font-semibold text-gray-700">${it.urgencia}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.urgencia * 10}%;background:#0071e3;opacity:.7"></div></div></div>
+      <div class="flex flex-col items-center gap-1"><span class="text-xs font-semibold text-gray-700">${it.desejo}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.desejo * 10}%;background:#0071e3;opacity:.5"></div></div></div>
+      <div class="flex flex-col items-center gap-1"><span class="text-xs font-semibold text-gray-700">${it.impacto}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.impacto * 10}%;background:#0071e3;opacity:.35"></div></div></div>
+      <div class="flex flex-col gap-1">
+        <span class="text-base font-bold tracking-tight" style="color:#0071e3">${score.toFixed(2)}</span>
+        <span class="text-[11px] text-gray-400">${it.custo ? 'R$ ' + it.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '—'}</span>
       </div>
       <div class="flex gap-1 justify-end">
-        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all" onclick="toggleAcq(${it.id})" title="${it.acquired ? 'Desfazer' : 'Adquirido'}"><i data-lucide="${it.acquired ? 'undo-2' : 'check'}" style="width:11px;height:11px"></i></button>
-        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onclick="openEdit(${it.id})" title="Editar"><i data-lucide="pencil" style="width:11px;height:11px"></i></button>
-        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all" onclick="delItem(${it.id})" title="Remover"><i data-lucide="trash-2" style="width:11px;height:11px"></i></button>
+        <button class="w-7 h-7 rounded-lg border border-gray-200 text-gray-400 flex items-center justify-center hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all" onclick="toggleAcq(${it.id})" title="${it.acquired ? 'Desfazer' : 'Adquirido'}"><i data-lucide="${it.acquired ? 'undo-2' : 'check'}" style="width:12px;height:12px"></i></button>
+        <button class="w-7 h-7 rounded-lg border border-gray-200 text-gray-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onclick="openEdit(${it.id})" title="Editar"><i data-lucide="pencil" style="width:12px;height:12px"></i></button>
+        <button class="w-7 h-7 rounded-lg border border-gray-200 text-gray-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all" onclick="delItem(${it.id})" title="Remover"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
       </div>
     </div>`;
   }).join('');
@@ -685,7 +701,7 @@ function updateLastUpdated() { document.getElementById('lastUpdated').textConten
 function toast(msg, err = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = err ? 'rgb(239,68,68)' : 'rgb(17,24,39)';
+  t.style.background = err ? '#ef4444' : '#111827';
   t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
   clearTimeout(t._t);
   t._t = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(8px)'; }, 2800);
