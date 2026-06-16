@@ -332,10 +332,18 @@ const sb = createClient(SUPA_URL, SUPA_KEY, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: false,
+  },
+  global: {
+    fetch: (url, options) => {
+      // 10s timeout on every Supabase request — releases internal lock if refresh hangs
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 10000);
+      return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(tid));
+    }
   }
 });
 
-let items = [], filter = 'Todos', sort = 'score', editId = null, currentUser = null;
+let items = [], filter = 'Todos', sort = 'score', editId = null, currentUser = null, appLoaded = false;
 
 const CAT = {
   Tech:{bg:'#eff6ff',color:'#2563eb'}, Casa:{bg:'#f0fdf4',color:'#16a34a'},
@@ -400,10 +408,9 @@ async function forgotPassword() {
   showAuthError(error ? translateAuthError(error.message) : '✓ E-mail de recuperação enviado!');
 }
 async function doSignout() {
+  appLoaded = false;
   try { await sb.auth.signOut({ scope: 'local' }); } catch(e) {}
-  currentUser = null; items = [];
-  document.getElementById('authScreen').classList.remove('hidden');
-  document.getElementById('appLayout').classList.add('hidden');
+  showLogin();
 }
 function showAuthError(msg) { document.getElementById('auth-error').textContent = msg; }
 function translateAuthError(msg) {
@@ -432,13 +439,15 @@ function showLogin() {
   document.getElementById('appLayout').classList.add('hidden');
 }
 
-// Handles login/logout transitions only — NOT initial page load
+// INITIAL_SESSION fires on page load with stored session — handles refresh too
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+  if (session?.user && !appLoaded) {
+    appLoaded = true;
     showApp(session.user);
     initSliders();
     await loadItems();
-  } else if (event === 'SIGNED_OUT') {
+  } else if (!session && event === 'SIGNED_OUT') {
+    appLoaded = false;
     showLogin();
   }
 });
@@ -479,9 +488,14 @@ function syncCostSlider() {
 // ── CRUD ──
 async function loadItems() {
   document.getElementById('list').innerHTML = '<div class="text-center py-10 text-sm text-gray-400">Carregando…</div>';
-  const { data, error } = await sb.from('items').select('*').order('created_at', { ascending: false });
-  if (error) { toast('Erro ao carregar itens', true); return; }
-  items = data || []; render(); updateLastUpdated();
+  try {
+    const { data, error } = await sb.from('items').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    items = data || []; render(); updateLastUpdated();
+  } catch(e) {
+    document.getElementById('list').innerHTML = '';
+    toast('Erro ao carregar itens — tente sair e entrar novamente.', true);
+  }
 }
 
 async function addItem() {
@@ -734,16 +748,7 @@ document.getElementById('login-pass').addEventListener('keydown', e => { if (e.k
 document.getElementById('f-custo').addEventListener('input', e => { fmtCurrencyInput(e); syncCostSlider(); });
 document.getElementById('e-custo').addEventListener('input', fmtCurrencyInput);
 window.addEventListener('resize', () => render());
-document.addEventListener('DOMContentLoaded', async () => {
-  lucide.createIcons();
-  // Explicit session check on every page load (refresh-safe)
-  const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    showApp(session.user);
-    initSliders();
-    await loadItems();
-  }
-});
+document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 </body>
 </html>
