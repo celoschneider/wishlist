@@ -566,27 +566,31 @@ async function addItem() {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { document.getElementById('f-nome').focus(); return; }
   const btn = document.getElementById('btn-add');
+  const btnOrig = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> Adicionar item';
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Salvando…';
 
-  const newItem = {
-    id: Date.now(),
-    user_id: currentUser.id,
-    nome,
-    categoria: document.getElementById('f-cat').value,
-    custo: parseFloat(document.getElementById('f-custo').value)||0,
-    nota: document.getElementById('f-nota').value.trim(),
-    urgencia: +document.getElementById('f-urgencia').value,
-    desejo:   +document.getElementById('f-desejo').value,
-    impacto:  +document.getElementById('f-impacto').value,
-    acquired: false,
-  };
+  try {
+    const newItem = {
+      user_id: currentUser.id,
+      nome,
+      categoria: document.getElementById('f-cat').value,
+      custo: parseFloat(document.getElementById('f-custo').value)||0,
+      nota: document.getElementById('f-nota').value.trim(),
+      urgencia: +document.getElementById('f-urgencia').value,
+      desejo:   +document.getElementById('f-desejo').value,
+      impacto:  +document.getElementById('f-impacto').value,
+      acquired: false,
+    };
 
-  const { data, error } = await sb.from('items').insert(newItem).select().single();
-  btn.disabled = false; btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> Adicionar item';
-
-  if (error) { toast('Erro ao salvar: '+error.message, true); return; }
-  items.unshift(data);
-  resetForm(); render(); updateLastUpdated(); toast('Item adicionado ✓');
+    const { data, error } = await sb.from('items').insert(newItem).select().single();
+    if (error) { toast('Erro ao salvar: '+error.message, true); return; }
+    items.unshift(data);
+    resetForm(); render(); updateLastUpdated(); toast('Item adicionado ✓');
+  } catch(e) {
+    toast('Erro inesperado: '+e.message, true);
+  } finally {
+    btn.disabled = false; btn.innerHTML = btnOrig;
+  }
 }
 
 async function toggleAcq(id) {
