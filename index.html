@@ -335,10 +335,14 @@ const sb = createClient(SUPA_URL, SUPA_KEY, {
   },
   global: {
     fetch: (url, options) => {
-      // 10s timeout on every Supabase request — releases internal lock if refresh hangs
+      const label = url.includes('/auth/') ? '[auth]' : url.split('/rest/v1/')[1]?.split('?')[0] ?? url;
+      console.log('[sb] fetch →', label);
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 10000);
-      return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(tid));
+      const tid = setTimeout(() => { console.warn('[sb] TIMEOUT →', label); ctrl.abort(); }, 10000);
+      return fetch(url, { ...options, signal: ctrl.signal })
+        .then(r => { console.log('[sb] fetch ✓', label, r.status); return r; })
+        .catch(e => { console.error('[sb] fetch ✗', label, e.name, e.message); throw e; })
+        .finally(() => clearTimeout(tid));
     }
   }
 });
@@ -441,6 +445,7 @@ function showLogin() {
 
 // INITIAL_SESSION fires on page load with stored session — handles refresh too
 sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('[auth]', event, '| user:', session?.user?.email ?? 'none', '| appLoaded:', appLoaded);
   if (session?.user && !appLoaded) {
     appLoaded = true;
     showApp(session.user);
@@ -487,12 +492,15 @@ function syncCostSlider() {
 
 // ── CRUD ──
 async function loadItems() {
+  console.log('[loadItems] iniciando...');
   document.getElementById('list').innerHTML = '<div class="text-center py-10 text-sm text-gray-400">Carregando…</div>';
   try {
     const { data, error } = await sb.from('items').select('*').order('created_at', { ascending: false });
+    console.log('[loadItems] resultado: data=', data?.length ?? 'null', 'error=', error?.message ?? 'nenhum');
     if (error) throw error;
     items = data || []; render(); updateLastUpdated();
   } catch(e) {
+    console.error('[loadItems] erro:', e.name, e.message);
     document.getElementById('list').innerHTML = '';
     toast('Erro ao carregar itens — tente sair e entrar novamente.', true);
   }
