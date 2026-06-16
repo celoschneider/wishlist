@@ -326,7 +326,14 @@ input:focus,select:focus{border-color:#0071e3 !important;outline:none}
 const SUPA_URL = 'https://xvadsszlynogdurxqwhr.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2YWRzc3pseW5vZ2R1cnhxd2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjE1MDYsImV4cCI6MjA5NzEzNzUwNn0.6aZDaEwUS3SAFmQa0C42otwuDMeSBdizvq4PWuKnVS4';
 const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY);
+const sb = createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    flowType: 'implicit',
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+  }
+});
 
 let items = [], filter = 'Todos', sort = 'score', editId = null, currentUser = null;
 
@@ -392,7 +399,12 @@ async function forgotPassword() {
   const { error } = await sb.auth.resetPasswordForEmail(email);
   showAuthError(error ? translateAuthError(error.message) : '✓ E-mail de recuperação enviado!');
 }
-async function doSignout() { await sb.auth.signOut(); }
+async function doSignout() {
+  try { await sb.auth.signOut({ scope: 'local' }); } catch(e) {}
+  currentUser = null; items = [];
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('appLayout').classList.add('hidden');
+}
 function showAuthError(msg) { document.getElementById('auth-error').textContent = msg; }
 function translateAuthError(msg) {
   if (msg.includes('Invalid login')) return 'E-mail ou senha incorretos.';
@@ -405,6 +417,7 @@ function translateAuthError(msg) {
 // ── SESSION ──
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
+    const isFirst = !currentUser;
     currentUser = session.user;
     document.getElementById('authScreen').classList.add('hidden');
     document.getElementById('appLayout').classList.remove('hidden');
@@ -413,8 +426,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
     document.getElementById('topbarDate').textContent =
       new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    initSliders();
-    await loadItems();
+    if (isFirst || event === 'SIGNED_IN') {
+      initSliders();
+      await loadItems();
+    }
   } else {
     currentUser = null; items = [];
     document.getElementById('authScreen').classList.remove('hidden');
