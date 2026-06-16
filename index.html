@@ -415,25 +415,31 @@ function translateAuthError(msg) {
 }
 
 // ── SESSION ──
+function showApp(user) {
+  currentUser = user;
+  const email = user.email || '';
+  document.getElementById('userEmail').textContent = email;
+  document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+  document.getElementById('topbarDate').textContent =
+    new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appLayout').classList.remove('hidden');
+}
+
+function showLogin() {
+  currentUser = null; items = [];
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('appLayout').classList.add('hidden');
+}
+
+// Handles login/logout transitions only — NOT initial page load
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    const isFirst = !currentUser;
-    currentUser = session.user;
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('appLayout').classList.remove('hidden');
-    const email = currentUser.email || '';
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
-    document.getElementById('topbarDate').textContent =
-      new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    if (isFirst || event === 'SIGNED_IN') {
-      initSliders();
-      await loadItems();
-    }
-  } else {
-    currentUser = null; items = [];
-    document.getElementById('authScreen').classList.remove('hidden');
-    document.getElementById('appLayout').classList.add('hidden');
+  if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+    showApp(session.user);
+    initSliders();
+    await loadItems();
+  } else if (event === 'SIGNED_OUT') {
+    showLogin();
   }
 });
 
@@ -728,7 +734,16 @@ document.getElementById('login-pass').addEventListener('keydown', e => { if (e.k
 document.getElementById('f-custo').addEventListener('input', e => { fmtCurrencyInput(e); syncCostSlider(); });
 document.getElementById('e-custo').addEventListener('input', fmtCurrencyInput);
 window.addEventListener('resize', () => render());
-document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+document.addEventListener('DOMContentLoaded', async () => {
+  lucide.createIcons();
+  // Explicit session check on every page load (refresh-safe)
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    showApp(session.user);
+    initSliders();
+    await loadItems();
+  }
+});
 </script>
 </body>
 </html>
