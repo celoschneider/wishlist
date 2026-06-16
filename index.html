@@ -1,429 +1,317 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wishlist</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --blue: rgb(0,113,227); --blue-light: rgba(0,113,227,0.08); --blue-dark: rgb(0,85,180);
-  --bg: #f4f6f9; --white: #fff; --border: rgba(0,0,0,0.07); --border-strong: rgba(0,0,0,0.12);
-  --text: #1a1a2e; --text-2: #3d3d5c; --muted: #8a8aa8; --muted-2: #c4c4d4;
-  --red: rgb(255,59,48); --green: rgb(52,199,89); --orange: rgb(255,149,0);
-  --font: -apple-system,'Helvetica Neue',Arial,sans-serif;
-  --radius: 14px; --radius-sm: 9px;
-  --shadow-card: 0 1px 4px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.05);
-  --shadow-hover: 0 4px 20px rgba(0,0,0,0.1),0 1px 4px rgba(0,0,0,0.06);
-  --sidebar-w: 260px;
-}
-html { -webkit-font-smoothing: antialiased; }
-body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
-
-/* ══ AUTH SCREEN ══ */
-.auth-screen {
-  display: none; position: fixed; inset: 0; background: var(--bg);
-  align-items: center; justify-content: center; z-index: 500;
-}
-.auth-screen.visible { display: flex; }
-.auth-box {
-  background: var(--white); border-radius: 20px; padding: 36px 32px;
-  width: 92%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-  animation: modalIn 0.24s cubic-bezier(.34,1.56,.64,1) both;
-}
-.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-.auth-logo-icon {
-  width: 36px; height: 36px; border-radius: 10px; background: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-}
-.auth-logo-icon svg { width: 18px; height: 18px; }
-.auth-logo-text { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.03em; }
-.auth-title { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.04em; margin-bottom: 6px; }
-.auth-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 24px; letter-spacing: -0.01em; }
-.auth-tabs { display: flex; background: rgba(0,0,0,0.05); border-radius: 8px; padding: 2px; margin-bottom: 22px; }
-.auth-tab {
-  flex: 1; font-family: var(--font); font-size: 0.78rem; font-weight: 500;
-  color: var(--muted); background: none; border: none; cursor: pointer;
-  padding: 6px; border-radius: 6px; transition: all 0.14s;
-}
-.auth-tab.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
-.auth-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
-.auth-field label { font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
-.auth-field input {
-  font-family: var(--font); background: var(--bg); border: 1px solid var(--border-strong);
-  border-radius: 9px; padding: 10px 12px; font-size: 0.85rem; color: var(--text);
-  outline: none; width: 100%; transition: border-color 0.15s, box-shadow 0.15s;
-}
-.auth-field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,113,227,0.12); background: var(--white); }
-.auth-btn {
-  width: 100%; font-family: var(--font); font-size: 0.85rem; font-weight: 600;
-  background: var(--blue); color: white; border: none; border-radius: 980px;
-  padding: 11px; cursor: pointer; transition: all 0.14s; margin-top: 6px; letter-spacing: -0.01em;
-}
-.auth-btn:hover { background: var(--blue-dark); }
-.auth-btn:active { transform: scale(0.97); }
-.auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.auth-error { font-size: 0.72rem; color: var(--red); margin-top: 10px; text-align: center; min-height: 18px; }
-.auth-forgot { font-size: 0.7rem; color: var(--blue); cursor: pointer; text-align: right; margin-top: -6px; margin-bottom: 4px; text-decoration: none; display: block; }
-.auth-forgot:hover { text-decoration: underline; }
-
-/* ══ APP LAYOUT ══ */
-.app-layout { display: none; height: 100vh; overflow: hidden; }
-.app-layout.visible { display: flex; }
-
-/* SIDEBAR */
-.sidebar {
-  width: var(--sidebar-w); min-width: var(--sidebar-w);
-  background: var(--white); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; height: 100vh; overflow-y: auto;
-}
-.sidebar-header { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.logo-icon svg { width: 15px; height: 15px; }
-.logo-text { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; }
-.tagline { font-size: 0.6rem; color: var(--muted); padding-left: 38px; margin-top: 2px; }
-.sidebar-section { padding: 12px 12px 2px; }
-.sidebar-section-label { font-size: 0.57rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 4px; margin-bottom: 6px; }
-.sidebar-body { padding: 4px 12px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1px; }
-.field-label { font-size: 0.59rem; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
-input[type=text], input[type=number], select {
-  font-family: var(--font); background: var(--bg); border: 1px solid var(--border-strong);
-  border-radius: 8px; padding: 7px 9px; font-size: 0.79rem; color: var(--text);
-  outline: none; width: 100%; transition: border-color 0.15s, box-shadow 0.15s; -webkit-appearance: none;
-}
-input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,113,227,0.12); background: var(--white); }
-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8aa8' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.slider-field { display: flex; flex-direction: column; gap: 5px; }
-.slider-header { display: flex; align-items: center; justify-content: space-between; }
-.slider-name { font-size: 0.6rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.03em; }
-.slider-badge { font-size: 0.66rem; font-weight: 700; color: var(--blue); background: var(--blue-light); border-radius: 4px; padding: 1px 6px; min-width: 30px; text-align: center; }
-.slider-badge .dn { font-weight: 400; color: var(--muted); font-size: 0.57rem; }
-.slider-wrap { position: relative; height: 15px; display: flex; align-items: center; }
-input[type=range] { -webkit-appearance: none; width: 100%; height: 3px; border-radius: 2px; background: transparent; border: none; padding: 0; outline: none; cursor: pointer; z-index: 1; position: relative; }
-input[type=range]::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: #e8e8f0; }
-input[type=range]::-moz-range-track { height: 3px; border-radius: 2px; background: #e8e8f0; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; margin-top: -5.5px; background: var(--white); box-shadow: 0 0 0 1px rgba(0,0,0,0.12),0 2px 4px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.12s; }
-input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.15); }
-input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; border: none; background: var(--white); box-shadow: 0 0 0 1px rgba(0,0,0,0.12),0 2px 4px rgba(0,0,0,0.15); }
-.track-fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 3px; border-radius: 2px; background: var(--blue); pointer-events: none; z-index: 0; }
-.slider-hints { display: flex; justify-content: space-between; }
-.slider-hints span { font-size: 0.52rem; color: var(--muted-2); flex: 1; }
-.slider-hints span:first-child { text-align: left; }
-.slider-hints span:last-child { text-align: right; }
-.slider-hints span.lit { color: var(--blue); font-weight: 600; }
-.cost-readonly .track-fill { background: var(--muted-2); }
-.cost-readonly input[type=range] { pointer-events: none; opacity: 0; }
-.cost-note { font-size: 0.54rem; color: var(--muted); }
-.formula { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; font-size: 0.59rem; color: var(--muted); line-height: 1.7; }
-.formula strong { color: var(--text-2); font-weight: 600; }
-.fp { display: inline-block; background: var(--white); border: 1px solid var(--border-strong); border-radius: 4px; padding: 0 4px; font-size: 0.57rem; color: var(--text); font-weight: 500; vertical-align: middle; margin: 0 1px; }
-.divider { height: 1px; background: var(--border); margin: 3px 0; }
-.btn { font-family: var(--font); font-size: 0.76rem; font-weight: 600; border-radius: 980px; border: none; cursor: pointer; padding: 8px 14px; letter-spacing: -0.01em; transition: all 0.14s; line-height: 1; display: inline-flex; align-items: center; gap: 5px; }
-.btn-primary { background: var(--blue); color: white; width: 100%; justify-content: center; }
-.btn-primary:hover { background: var(--blue-dark); }
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-ghost { background: rgba(0,0,0,0.05); color: var(--text-2); }
-.btn-ghost:hover { background: rgba(0,0,0,0.09); }
-.btn-row { display: flex; gap: 6px; }
-.btn-row .btn { flex: 1; justify-content: center; font-size: 0.68rem; padding: 7px 8px; }
-.sidebar-footer { padding: 10px 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
-.user-row { display: flex; align-items: center; gap: 8px; padding: 8px 4px; margin-bottom: 8px; }
-.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--blue); flex-shrink: 0; }
-.user-email { font-size: 0.65rem; color: var(--muted); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.btn-signout { background: none; border: none; color: var(--muted); font-size: 0.65rem; cursor: pointer; padding: 4px 6px; border-radius: 5px; font-family: var(--font); transition: all 0.13s; white-space: nowrap; }
-.btn-signout:hover { background: rgba(255,59,48,0.08); color: var(--red); }
-.last-updated { font-size: 0.58rem; color: var(--muted); text-align: center; margin-top: 6px; }
-
-/* MAIN */
-.main { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg); }
-.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 22px; height: 50px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 12px; }
-.breadcrumb { font-size: 0.73rem; color: var(--muted); letter-spacing: -0.01em; }
-.breadcrumb strong { color: var(--text); font-weight: 600; }
-.topbar-date { font-size: 0.68rem; color: var(--muted); background: var(--bg); border: 1px solid var(--border-strong); border-radius: 7px; padding: 4px 9px; }
-.content { padding: 18px 22px 40px; flex: 1; min-width: 0; }
-.section-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.section-title { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; }
-
-/* KPI */
-.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
-.kpi-card { background: var(--white); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-card); border: 1px solid var(--border); transition: box-shadow 0.2s; }
-.kpi-card:hover { box-shadow: var(--shadow-hover); }
-.kpi-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-bottom: 8px; }
-.kpi-label { font-size: 0.59rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
-.kpi-value { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.05em; color: var(--text); line-height: 1.1; margin-top: 4px; }
-.kpi-value.blue { color: var(--blue); }
-.kpi-sub { font-size: 0.62rem; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kpi-sub .nu { color: var(--orange); font-weight: 600; }
-
-/* CHARTS */
-.charts-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; margin-bottom: 16px; }
-.chart-card { background: var(--white); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-card); border: 1px solid var(--border); min-width: 0; }
-.chart-title { font-size: 0.75rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
-.chart-sub { font-size: 0.6rem; color: var(--muted); margin-bottom: 12px; }
-.chart-svg { width: 100%; overflow: visible; }
-.donut-wrap { display: flex; align-items: center; gap: 14px; }
-.donut-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.legend-label { font-size: 0.62rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend-val { font-size: 0.62rem; font-weight: 600; color: var(--text); margin-left: auto; flex-shrink: 0; }
-
-/* LIST */
-.list-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-card); border: 1px solid var(--border); overflow: hidden; }
-.list-topbar { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
-.list-topbar-title { font-size: 0.85rem; font-weight: 700; letter-spacing: -0.02em; }
-.tab-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 16px; overflow-x: auto; }
-.tab-btn { font-family: var(--font); font-size: 0.7rem; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; padding: 9px 12px; border-bottom: 2px solid transparent; transition: all 0.14s; white-space: nowrap; }
-.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
-.tab-btn:hover:not(.active) { color: var(--text-2); }
-.tab-count { display: inline-flex; align-items: center; justify-content: center; background: var(--blue); color: white; font-size: 0.53rem; font-weight: 700; border-radius: 10px; padding: 1px 5px; margin-left: 4px; min-width: 15px; }
-.list-controls { display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.seg { display: flex; background: rgba(0,0,0,0.05); border-radius: 7px; padding: 2px; }
-.seg-btn { font-family: var(--font); font-size: 0.65rem; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; padding: 3px 8px; border-radius: 5px; transition: all 0.13s; white-space: nowrap; }
-.seg-btn.active { background: var(--white); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.controls-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.ios-toggle { position: relative; display: inline-block; width: 30px; height: 17px; flex-shrink: 0; }
-.ios-toggle input { opacity: 0; width: 0; height: 0; }
-.ios-track { position: absolute; inset: 0; border-radius: 20px; background: #e0e0e8; transition: background 0.2s; cursor: pointer; }
-.ios-toggle input:checked + .ios-track { background: var(--green); }
-.ios-knob { position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: none; }
-.ios-toggle input:checked ~ .ios-knob { transform: translateX(13px); }
-.toggle-lbl { font-size: 0.67rem; color: var(--muted); cursor: pointer; user-select: none; }
-.tbl-head { display: grid; grid-template-columns: 34px minmax(0,1fr) 76px 42px 42px 42px 82px 64px; gap: 8px; padding: 8px 16px; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: #fafafa; border-bottom: 1px solid var(--border); }
-.tbl-row { display: grid; grid-template-columns: 34px minmax(0,1fr) 76px 42px 42px 42px 82px 64px; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; animation: fadeUp 0.18s ease both; }
-.tbl-row:last-child { border-bottom: none; }
-.tbl-row:hover { background: #f8f9fc; }
-.tbl-row.acquired { opacity: 0.38; }
-.tbl-row.acquired .item-name { text-decoration: line-through; color: var(--muted); }
-.tbl-row > div:nth-child(2) { min-width: 0; overflow: hidden; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-@keyframes modalIn { from{opacity:0;transform:scale(0.94) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
-.rank { font-size: 0.78rem; font-weight: 700; color: var(--muted-2); text-align: center; }
-.rank.top { color: var(--blue); }
-.item-name { font-size: 0.79rem; font-weight: 500; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-note { font-size: 0.59rem; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.cat-pill { display: inline-flex; align-items: center; justify-content: center; font-size: 0.58rem; font-weight: 600; padding: 3px 7px; border-radius: 5px; white-space: nowrap; }
-.mini-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.mini-val { font-size: 0.7rem; font-weight: 600; color: var(--text-2); }
-.mini-track { width: 100%; height: 2px; background: #eeeef4; border-radius: 2px; overflow: hidden; }
-.mini-fill { height: 100%; border-radius: 2px; }
-.score-col { display: flex; flex-direction: column; gap: 2px; }
-.score-val { font-size: 0.83rem; font-weight: 700; color: var(--blue); letter-spacing: -0.03em; }
-.score-cost { font-size: 0.56rem; color: var(--muted); }
-.score-track { width: 100%; height: 2px; background: #eeeef4; border-radius: 2px; overflow: hidden; margin-top: 2px; }
-.score-fill { height: 100%; background: var(--blue); border-radius: 2px; }
-.row-acts { display: flex; gap: 3px; justify-content: flex-end; }
-.icon-btn { width: 24px; height: 24px; border-radius: 5px; background: var(--bg); border: 1px solid var(--border-strong); color: var(--muted); font-size: 0.63rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.12s; flex-shrink: 0; }
-.icon-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
-.icon-btn.danger:hover { background: rgba(255,59,48,0.08); border-color: var(--red); color: var(--red); }
-.icon-btn.check:hover { background: rgba(52,199,89,0.1); border-color: var(--green); color: var(--green); }
-.empty { text-align: center; padding: 40px; color: var(--muted); font-size: 0.8rem; }
-.loading-row { text-align: center; padding: 32px; color: var(--muted); font-size: 0.78rem; }
-
-/* MODAL */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-.modal-overlay.open { display: flex; }
-.modal { background: var(--white); border-radius: 16px; padding: 22px; width: 92%; max-width: 490px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.15); animation: modalIn 0.2s cubic-bezier(.34,1.56,.64,1) both; }
-.modal h2 { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 14px; }
-.modal-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin: 12px 0; }
-
-/* TOAST */
-#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: #fff; padding: 8px 16px; border-radius: 980px; font-size: 0.74rem; letter-spacing: -0.01em; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.18s,transform 0.18s; z-index: 9999; white-space: nowrap; pointer-events: none; }
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#toast.error { background: var(--red); }
-
-/* SPINNER */
-.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:transparent;border:none;padding:0;outline:none;cursor:pointer;z-index:1;position:relative}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#e5e7eb}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;margin-top:-5.5px;background:white;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.15);cursor:pointer;transition:transform .12s}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:none;background:white;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.15)}
+.track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:3px;border-radius:2px;background:#0071e3;pointer-events:none;z-index:0}
+.cost-readonly .track-fill{background:#d1d5db}
+.cost-readonly input[type=range]{pointer-events:none;opacity:0}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;-webkit-appearance:none}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.anim-fadeup{animation:fadeUp .18s ease both}
+.anim-modal{animation:modalIn .22s cubic-bezier(.34,1.56,.64,1) both}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
 </style>
 </head>
-<body>
+<body class="h-full bg-gray-50 antialiased" style="font-family:-apple-system,'Helvetica Neue',Arial,sans-serif">
 
-<!-- ══ AUTH ══ -->
-<div class="auth-screen visible" id="authScreen">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M3 12l3-4 2.5 3L11 7l3 5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="4" r="1.5" fill="white"/></svg>
+<!-- AUTH -->
+<div id="authScreen" class="fixed inset-0 bg-gray-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-sm shadow-xl anim-modal">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#0071e3">
+        <i data-lucide="star" style="width:16px;height:16px;color:white;fill:white"></i>
       </div>
-      <span class="auth-logo-text">Wishlist</span>
+      <span class="text-base font-bold tracking-tight">Wishlist</span>
     </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
-      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Criar conta</button>
+    <div class="flex bg-gray-100 rounded-lg p-0.5 mb-5">
+      <button id="tab-login" onclick="switchTab('login')" class="flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all">Entrar</button>
+      <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all">Criar conta</button>
     </div>
     <div id="auth-login">
-      <div class="auth-field"><label>E-mail</label><input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email"></div>
-      <div class="auth-field"><label>Senha</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
-      <a class="auth-forgot" onclick="forgotPassword()">Esqueci minha senha</a>
-      <button class="auth-btn" id="btn-login" onclick="doLogin()">Entrar</button>
+      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">E-mail</label><input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all" style=""></div>
+      <div class="mb-2"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Senha</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <button onclick="forgotPassword()" class="text-xs block text-right mb-4 hover:underline" style="color:#0071e3">Esqueci minha senha</button>
+      <button id="btn-login" onclick="doLogin()" class="w-full text-sm font-semibold text-white rounded-full py-2.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">Entrar</button>
     </div>
-    <div id="auth-signup" style="display:none">
-      <div class="auth-field"><label>E-mail</label><input id="signup-email" type="email" placeholder="seu@email.com" autocomplete="email"></div>
-      <div class="auth-field"><label>Senha</label><input id="signup-pass" type="password" placeholder="mínimo 6 caracteres" autocomplete="new-password"></div>
-      <div class="auth-field"><label>Confirmar senha</label><input id="signup-pass2" type="password" placeholder="repita a senha" autocomplete="new-password"></div>
-      <button class="auth-btn" id="btn-signup" onclick="doSignup()">Criar conta</button>
+    <div id="auth-signup" class="hidden">
+      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">E-mail</label><input id="signup-email" type="email" placeholder="seu@email.com" autocomplete="email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Senha</label><input id="signup-pass" type="password" placeholder="mínimo 6 caracteres" autocomplete="new-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <div class="mb-4"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Confirmar senha</label><input id="signup-pass2" type="password" placeholder="repita a senha" autocomplete="new-password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+      <button id="btn-signup" onclick="doSignup()" class="w-full text-sm font-semibold text-white rounded-full py-2.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">Criar conta</button>
     </div>
-    <div class="auth-error" id="auth-error"></div>
+    <div id="auth-error" class="text-xs text-red-500 text-center mt-3 min-h-[18px]"></div>
   </div>
 </div>
 
-<!-- ══ APP ══ -->
-<div class="app-layout" id="appLayout">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">
-        <div class="logo-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M3 12l3-4 2.5 3L11 7l3 5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="4" r="1.5" fill="white"/></svg></div>
-        <span class="logo-text">Wishlist</span>
-      </div>
-      <div class="tagline">priorização inteligente</div>
-    </div>
-    <div class="sidebar-section"><div class="sidebar-section-label">Novo item</div></div>
-    <div class="sidebar-body">
-      <div class="field"><div class="field-label">Nome</div><input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…"></div>
-      <div class="two-col">
-        <div class="field"><div class="field-label">Categoria</div>
-          <select id="f-cat"><option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option></select>
+<!-- APP -->
+<div id="appLayout" class="hidden h-screen flex overflow-hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar w-64 min-w-[256px] bg-white border-r border-gray-100 flex flex-col h-screen overflow-y-auto flex-shrink-0">
+    <div class="px-4 py-4 border-b border-gray-100 flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#0071e3">
+          <i data-lucide="star" style="width:13px;height:13px;color:white;fill:white"></i>
         </div>
-        <div class="field"><div class="field-label">Custo (R$)</div><input id="f-custo" type="number" placeholder="0" min="0" oninput="syncCostSlider()"></div>
+        <div>
+          <div class="text-sm font-bold tracking-tight leading-none">Wishlist</div>
+          <div class="text-[10px] text-gray-400 leading-none mt-0.5">priorização inteligente</div>
+        </div>
       </div>
-      <div class="field"><div class="field-label">Nota / link</div><input id="f-nota" type="text" placeholder="opcional…"></div>
-      <div class="divider"></div>
-      <div class="slider-field">
-        <div class="slider-header"><span class="slider-name">Urgência</span><span class="slider-badge" id="fb-urg">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
-        <div class="slider-hints"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
-      </div>
-      <div class="slider-field">
-        <div class="slider-header"><span class="slider-name">Desejo</span><span class="slider-badge" id="fb-des">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
-        <div class="slider-hints"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
-      </div>
-      <div class="slider-field">
-        <div class="slider-header"><span class="slider-name">Impacto</span><span class="slider-badge" id="fb-imp">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
-        <div class="slider-hints"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
-      </div>
-      <div class="slider-field cost-readonly">
-        <div class="slider-header"><span class="slider-name">Peso do custo</span><span class="slider-badge" id="fb-cst" style="background:rgba(0,0,0,0.05);color:var(--muted)">—</span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ff-cst" style="width:0%"></div><input type="range" min="1" max="10" value="1" disabled></div>
-        <div class="cost-note">calculado pelo valor · penaliza o score</div>
-      </div>
-      <div class="formula"><strong>Score</strong> = <span class="fp">Urg ×0.35</span>+<span class="fp">Des ×0.30</span>+<span class="fp">Imp ×0.25</span>−<span class="fp">Custo ×0.10</span></div>
-      <button class="btn btn-primary" id="btn-add" onclick="addItem()" style="margin-top:4px">
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Adicionar item
-      </button>
-      <button class="btn btn-ghost" onclick="resetForm()" style="width:100%;justify-content:center;font-size:0.7rem">Limpar campos</button>
     </div>
-    <div class="sidebar-footer">
-      <div class="user-row">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <div class="user-email" id="userEmail">—</div>
-        <button class="btn-signout" onclick="doSignout()">Sair</button>
+
+    <div class="flex-1 px-3 py-4 flex flex-col gap-3">
+      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Novo item</div>
+
+      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nome</label>
+        <input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Categoria</label>
+          <select id="f-cat" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all cursor-pointer">
+            <option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option>
+          </select></div>
+        <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Custo (R$)</label>
+          <input id="f-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="exportJSON()"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 7V1M2 4.5l3-3 3 3M1 9h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Exportar</button>
-        <button class="btn btn-ghost" onclick="importJSON()"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v6M2 4l3 3 3-3M1 9h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Importar</button>
+
+      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nota / link</label>
+        <input id="f-nota" type="text" placeholder="opcional…" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none transition-all"></div>
+
+      <div class="h-px bg-gray-100"></div>
+
+      <!-- Urgência -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Urgência</span>
+          <span id="fb-urg" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+        </div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
       </div>
-      <div class="last-updated" id="lastUpdated">—</div>
+
+      <!-- Desejo -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Desejo</span>
+          <span id="fb-des" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+        </div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
+      </div>
+
+      <!-- Impacto -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Impacto</span>
+          <span id="fb-imp" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span>
+        </div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
+      </div>
+
+      <!-- Peso custo -->
+      <div class="flex flex-col gap-1 cost-readonly">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Peso do custo</span>
+          <span id="fb-cst" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-400">—</span>
+        </div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-cst" style="width:0%"></div><input type="range" min="1" max="10" value="1" disabled></div>
+        <div class="text-[9px] text-gray-300">calculado pelo valor · penaliza o score</div>
+      </div>
+
+      <div class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[10px] text-gray-400 leading-relaxed">
+        <strong class="text-gray-600">Score</strong> =
+        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Urg×0.35</span>+
+        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Des×0.30</span>+
+        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Imp×0.25</span>−
+        <span class="bg-white border border-gray-200 rounded px-1 text-[9px] text-gray-700">Cst×0.10</span>
+      </div>
+
+      <button id="btn-add" onclick="addItem()" class="w-full text-xs font-semibold text-white rounded-full py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 active:scale-95 disabled:opacity-60" style="background:#0071e3">
+        <i data-lucide="plus" style="width:12px;height:12px"></i>Adicionar item
+      </button>
+      <button onclick="resetForm()" class="w-full text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-full py-2 flex items-center justify-center gap-1.5 transition-all">
+        <i data-lucide="x-circle" style="width:12px;height:12px"></i>Limpar campos
+      </button>
+    </div>
+
+    <div class="px-3 py-3 border-t border-gray-100 flex-shrink-0">
+      <div class="flex items-center gap-2 px-1 mb-3">
+        <div id="userAvatar" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:rgba(0,113,227,.1);color:#0071e3">?</div>
+        <div id="userEmail" class="text-xs text-gray-400 flex-1 min-w-0 truncate">—</div>
+        <button onclick="doSignout()" title="Sair" class="flex items-center text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+          <i data-lucide="log-out" style="width:13px;height:13px"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button onclick="exportJSON()" class="flex items-center justify-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg py-1.5 transition-all">
+          <i data-lucide="upload" style="width:12px;height:12px"></i>Exportar
+        </button>
+        <button onclick="importJSON()" class="flex items-center justify-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg py-1.5 transition-all">
+          <i data-lucide="download" style="width:12px;height:12px"></i>Importar
+        </button>
+      </div>
+      <div id="lastUpdated" class="text-[10px] text-gray-300 text-center mt-2">—</div>
     </div>
   </aside>
 
-  <main class="main">
-    <div class="topbar">
-      <div class="breadcrumb">Páginas / <strong>Dashboard</strong></div>
-      <div class="topbar-date" id="topbarDate">—</div>
+  <!-- MAIN -->
+  <main class="flex-1 min-w-0 h-screen overflow-y-auto flex flex-col bg-gray-50">
+    <div class="bg-white border-b border-gray-100 px-6 h-12 flex items-center justify-between flex-shrink-0">
+      <div class="text-sm text-gray-400">Páginas / <strong class="text-gray-900 font-semibold">Dashboard</strong></div>
+      <div id="topbarDate" class="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-1">—</div>
     </div>
-    <div class="content">
-      <div class="section-hd"><span class="section-title">Visão geral</span></div>
-      <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,113,227,0.1)">🎯</div><div class="kpi-label">Itens ativos</div><div class="kpi-value blue" id="k-ativos">—</div><div class="kpi-sub" id="k-ativos-sub">—</div></div>
-        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(255,149,0,0.1)">💰</div><div class="kpi-label">Custo total</div><div class="kpi-value" id="k-custo" style="font-size:1.05rem;margin-top:6px">—</div><div class="kpi-sub" id="k-custo-sub">—</div></div>
-        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(52,199,89,0.1)">🏆</div><div class="kpi-label">Top prioridade</div><div class="kpi-value blue" id="k-topscore" style="font-size:1.2rem">—</div><div class="kpi-sub" id="k-topname">—</div></div>
-        <div class="kpi-card"><div class="kpi-icon" style="background:rgba(88,86,214,0.1)">📊</div><div class="kpi-label">Score médio</div><div class="kpi-value" id="k-avg">—</div><div class="kpi-sub">dos itens pendentes</div></div>
+
+    <div class="p-6 flex flex-col gap-5">
+      <div class="text-sm font-bold text-gray-900">Visão geral</div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(0,113,227,.1)">
+            <i data-lucide="target" style="width:16px;height:16px;color:#0071e3"></i>
+          </div>
+          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Itens ativos</div>
+          <div id="k-ativos" class="text-2xl font-bold tracking-tight mt-1" style="color:#0071e3">—</div>
+          <div id="k-ativos-sub" class="text-xs text-gray-400 mt-0.5">—</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(255,149,0,.1)">
+            <i data-lucide="wallet" style="width:16px;height:16px;color:rgb(255,149,0)"></i>
+          </div>
+          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Custo total</div>
+          <div id="k-custo" class="text-base font-bold tracking-tight mt-1 text-gray-900">—</div>
+          <div id="k-custo-sub" class="text-xs text-gray-400 mt-0.5">—</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(52,199,89,.1)">
+            <i data-lucide="trophy" style="width:16px;height:16px;color:rgb(52,199,89)"></i>
+          </div>
+          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Top prioridade</div>
+          <div id="k-topscore" class="text-xl font-bold tracking-tight mt-1" style="color:#0071e3">—</div>
+          <div id="k-topname" class="text-xs text-gray-400 mt-0.5 truncate">—</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style="background:rgba(88,86,214,.1)">
+            <i data-lucide="bar-chart-2" style="width:16px;height:16px;color:rgb(88,86,214)"></i>
+          </div>
+          <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Score médio</div>
+          <div id="k-avg" class="text-2xl font-bold tracking-tight mt-1 text-gray-900">—</div>
+          <div class="text-xs text-gray-400 mt-0.5">dos itens pendentes</div>
+        </div>
       </div>
-      <div class="charts-row">
-        <div class="chart-card"><div class="chart-title">Score por item</div><div class="chart-sub">ranking de prioridade calculado</div><svg id="bar-chart" class="chart-svg" style="height:130px"></svg></div>
-        <div class="chart-card"><div class="chart-title">Por categoria</div><div class="chart-sub">distribuição de itens ativos</div><div class="donut-wrap"><svg id="donut-chart" width="96" height="96" viewBox="0 0 100 100" style="flex-shrink:0"></svg><div class="donut-legend" id="donut-legend"></div></div></div>
+
+      <!-- Charts -->
+      <div class="grid gap-4" style="grid-template-columns:1.6fr 1fr">
+        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <div class="text-sm font-bold text-gray-900 mb-0.5">Score por item</div>
+          <div class="text-xs text-gray-400 mb-4">ranking de prioridade calculado</div>
+          <svg id="bar-chart" style="width:100%;height:130px;overflow:visible"></svg>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <div class="text-sm font-bold text-gray-900 mb-0.5">Por categoria</div>
+          <div class="text-xs text-gray-400 mb-4">distribuição de itens ativos</div>
+          <div class="flex items-center gap-4">
+            <svg id="donut-chart" width="96" height="96" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
+            <div id="donut-legend" class="flex flex-col gap-1.5 flex-1 min-w-0"></div>
+          </div>
+        </div>
       </div>
-      <div class="list-card">
-        <div class="list-topbar">
-          <span class="list-topbar-title">Itens da wishlist</span>
-          <div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <div class="seg">
-              <button class="seg-btn active" data-sort="score"      onclick="setSort('score')">Score</button>
-              <button class="seg-btn"        data-sort="urgencia"   onclick="setSort('urgencia')">Urgência</button>
-              <button class="seg-btn"        data-sort="custo-asc"  onclick="setSort('custo-asc')">Custo ↑</button>
-              <button class="seg-btn"        data-sort="custo-desc" onclick="setSort('custo-desc')">Custo ↓</button>
-              <button class="seg-btn"        data-sort="nome"       onclick="setSort('nome')">A–Z</button>
+
+      <!-- List -->
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="flex items-center px-5 py-3.5 border-b border-gray-100 gap-3 flex-wrap">
+          <span class="text-sm font-bold text-gray-900">Itens da wishlist</span>
+          <div class="ml-auto flex items-center gap-3 flex-wrap">
+            <div class="flex bg-gray-100 rounded-lg p-0.5">
+              <button class="seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-900 transition-all" data-sort="score" onclick="setSort('score')">Score</button>
+              <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="urgencia" onclick="setSort('urgencia')">Urgência</button>
+              <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="custo-asc" onclick="setSort('custo-asc')">Custo ↑</button>
+              <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="custo-desc" onclick="setSort('custo-desc')">Custo ↓</button>
+              <button class="seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all" data-sort="nome" onclick="setSort('nome')">A–Z</button>
             </div>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-              <label class="ios-toggle"><input type="checkbox" id="showAcq" onchange="render()"><div class="ios-track"></div><div class="ios-knob"></div></label>
-              <span class="toggle-lbl">Adquiridos</span>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <div class="relative w-8 h-4">
+                <input type="checkbox" id="showAcq" onchange="render()" class="peer sr-only">
+                <div class="absolute inset-0 rounded-full bg-gray-200 peer-checked:bg-green-500 transition-colors cursor-pointer"></div>
+                <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 pointer-events-none"></div>
+              </div>
+              <span class="text-xs text-gray-500">Adquiridos</span>
             </label>
           </div>
         </div>
-        <div class="tab-row" id="tab-row">
-          <button class="tab-btn active" data-cat="Todos" onclick="setFilter('Todos')">Todos <span class="tab-count" id="tc-Todos">0</span></button>
+        <div id="tab-row" class="flex overflow-x-auto border-b border-gray-100 px-4"></div>
+        <div class="grid px-5 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide bg-gray-50 border-b border-gray-100" style="grid-template-columns:28px 1fr 76px 38px 38px 38px 90px 64px;gap:8px">
+          <div>#</div><div>Item</div><div>Categoria</div><div>Urg.</div><div>Des.</div><div>Imp.</div><div>Score</div><div></div>
         </div>
-        <div class="tbl-head"><div>#</div><div>Item</div><div>Categoria</div><div>Urg.</div><div>Des.</div><div>Imp.</div><div>Score</div><div></div></div>
         <div id="list"></div>
       </div>
     </div>
   </main>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2>Editar item</h2>
-    <div class="field" style="margin-bottom:8px"><div class="field-label">Nome</div><input id="e-nome" type="text"></div>
-    <div class="two-col" style="margin-bottom:8px">
-      <div class="field"><div class="field-label">Categoria</div><select id="e-cat"><option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option></select></div>
-      <div class="field"><div class="field-label">Custo (R$)</div><input id="e-custo" type="number" min="0"></div>
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.25);backdrop-filter:blur(8px)">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl anim-modal">
+    <h2 class="text-base font-bold tracking-tight mb-4">Editar item</h2>
+    <div class="mb-3"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nome</label><input id="e-nome" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Categoria</label>
+        <select id="e-cat" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all cursor-pointer">
+          <option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option>
+        </select></div>
+      <div><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Custo (R$)</label><input id="e-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
     </div>
-    <div class="field" style="margin-bottom:12px"><div class="field-label">Nota / link</div><input id="e-nota" type="text"></div>
-    <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
-    <div class="modal-sliders">
-      <div class="slider-field">
-        <div class="slider-header"><span class="slider-name">Urgência</span><span class="slider-badge" id="eb-urg">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ef-urg" style="width:44.4%"></div><input type="range" id="e-urgencia" min="1" max="10" value="5" oninput="syncSlider('e','urg',this.value)"></div>
-        <div class="slider-hints"><span>pode esperar</span><span>moderada</span><span>preciso logo</span></div>
+    <div class="mb-4"><label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Nota / link</label><input id="e-nota" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-all"></div>
+    <div class="h-px bg-gray-100 mb-4"></div>
+    <div class="grid grid-cols-2 gap-4 mb-2">
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Urgência</span><span id="eb-urg" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-urg" style="width:44.4%"></div><input type="range" id="e-urgencia" min="1" max="10" value="5" oninput="syncSlider('e','urg',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span>pode esperar</span><span>moderada</span><span>preciso logo</span></div>
       </div>
-      <div class="slider-field">
-        <div class="slider-header"><span class="slider-name">Desejo</span><span class="slider-badge" id="eb-des">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ef-des" style="width:44.4%"></div><input type="range" id="e-desejo" min="1" max="10" value="5" oninput="syncSlider('e','des',this.value)"></div>
-        <div class="slider-hints"><span>seria legal</span><span>quero muito</span><span>preciso disso</span></div>
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Desejo</span><span id="eb-des" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-des" style="width:44.4%"></div><input type="range" id="e-desejo" min="1" max="10" value="5" oninput="syncSlider('e','des',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span>seria legal</span><span>quero muito</span><span>preciso disso</span></div>
       </div>
-      <div class="slider-field" style="grid-column:1/-1">
-        <div class="slider-header"><span class="slider-name">Impacto na rotina</span><span class="slider-badge" id="eb-imp">5<span class="dn">/10</span></span></div>
-        <div class="slider-wrap"><div class="track-fill" id="ef-imp" style="width:44.4%"></div><input type="range" id="e-impacto" min="1" max="10" value="5" oninput="syncSlider('e','imp',this.value)"></div>
-        <div class="slider-hints"><span>cosmético</span><span>melhora muito</span><span>muda o jogo</span></div>
+      <div class="flex flex-col gap-1 col-span-2">
+        <div class="flex items-center justify-between"><span class="text-[10px] font-semibold text-gray-500 uppercase">Impacto na rotina</span><span id="eb-imp" class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:rgba(0,113,227,.08);color:#0071e3">5<span class="font-normal text-gray-400">/10</span></span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ef-imp" style="width:44.4%"></div><input type="range" id="e-impacto" min="1" max="10" value="5" oninput="syncSlider('e','imp',this.value)"></div>
+        <div class="flex justify-between text-[9px] text-gray-300"><span>cosmético</span><span>melhora muito</span><span>muda o jogo</span></div>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveEdit()">Salvar</button>
+    <div class="flex justify-end gap-2 mt-5">
+      <button onclick="closeModal()" class="text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 transition-all">Cancelar</button>
+      <button onclick="saveEdit()" class="text-sm font-semibold text-white rounded-full px-5 py-2 transition-all hover:opacity-90" style="background:#0071e3">Salvar</button>
     </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-2 opacity-0 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 pointer-events-none whitespace-nowrap transition-all duration-200 bg-gray-900"></div>
 
 <script>
-// ══ SUPABASE ══
-const SUPA_URL  = 'https://xvadsszlynogdurxqwhr.supabase.co';
-const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2YWRzc3pseW5vZ2R1cnhxd2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjE1MDYsImV4cCI6MjA5NzEzNzUwNn0.6aZDaEwUS3SAFmQa0C42otwuDMeSBdizvq4PWuKnVS4';
+const SUPA_URL = 'https://xvadsszlynogdurxqwhr.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2YWRzc3pseW5vZ2R1cnhxd2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NjE1MDYsImV4cCI6MjA5NzEzNzUwNn0.6aZDaEwUS3SAFmQa0C42otwuDMeSBdizvq4PWuKnVS4';
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
-// ══ STATE ══
 let items = [], filter = 'Todos', sort = 'score', editId = null, currentUser = null;
 
 const CAT = {
@@ -435,37 +323,50 @@ const CAT = {
 };
 const DONUT_COLORS = ['#0071e3','#34c759','#ff9500','#ff3b30','#5856d6','#30b0c7','#ffcc00','#8e8e93'];
 
-// ══ AUTH ══
-function switchTab(t) {
-  document.getElementById('auth-login').style.display  = t==='login'  ? '' : 'none';
-  document.getElementById('auth-signup').style.display = t==='signup' ? '' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',  t==='login');
-  document.getElementById('tab-signup').classList.toggle('active', t==='signup');
-  document.getElementById('auth-error').textContent = '';
+// ══ CURRENCY ══
+function fmtCurrencyInput(e) {
+  const raw = e.target.value.replace(/\D/g, '');
+  if (!raw) { e.target.value = ''; return; }
+  e.target.value = (parseInt(raw, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function getCurrencyVal(el) {
+  return parseFloat((el.value || '').replace(/\./g, '').replace(',', '.')) || 0;
+}
+function setCurrencyVal(el, num) {
+  el.value = num ? num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 }
 
+// ══ AUTH ══
+function switchTab(t) {
+  document.getElementById('auth-login').classList.toggle('hidden', t !== 'login');
+  document.getElementById('auth-signup').classList.toggle('hidden', t !== 'signup');
+  const tl = document.getElementById('tab-login'), ts = document.getElementById('tab-signup');
+  tl.className = t === 'login'
+    ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all'
+    : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all';
+  ts.className = t === 'signup'
+    ? 'flex-1 text-xs font-semibold py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all'
+    : 'flex-1 text-xs font-medium py-1.5 rounded-md text-gray-500 transition-all';
+  document.getElementById('auth-error').textContent = '';
+}
 function setAuthLoading(id, loading) {
   const btn = document.getElementById(id);
   btn.disabled = loading;
-  btn.innerHTML = loading ? '<span class="spinner"></span>' : (id==='btn-login' ? 'Entrar' : 'Criar conta');
+  btn.innerHTML = loading ? '<span class="spinner"></span>' : (id === 'btn-login' ? 'Entrar' : 'Criar conta');
 }
-
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
+  const email = document.getElementById('login-email').value.trim(), pass = document.getElementById('login-pass').value;
   if (!email || !pass) { showAuthError('Preencha e-mail e senha.'); return; }
   setAuthLoading('btn-login', true);
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   setAuthLoading('btn-login', false);
   if (error) showAuthError(translateAuthError(error.message));
 }
-
 async function doSignup() {
   const email = document.getElementById('signup-email').value.trim();
-  const pass  = document.getElementById('signup-pass').value;
-  const pass2 = document.getElementById('signup-pass2').value;
+  const pass = document.getElementById('signup-pass').value, pass2 = document.getElementById('signup-pass2').value;
   if (!email || !pass) { showAuthError('Preencha todos os campos.'); return; }
-  if (pass !== pass2)  { showAuthError('As senhas não coincidem.'); return; }
+  if (pass !== pass2) { showAuthError('As senhas não coincidem.'); return; }
   if (pass.length < 6) { showAuthError('Senha mínima de 6 caracteres.'); return; }
   setAuthLoading('btn-signup', true);
   const { error } = await sb.auth.signUp({ email, password: pass });
@@ -473,27 +374,18 @@ async function doSignup() {
   if (error) { showAuthError(translateAuthError(error.message)); return; }
   showAuthError('✓ Conta criada! Verifique seu e-mail para confirmar.');
 }
-
 async function forgotPassword() {
   const email = document.getElementById('login-email').value.trim();
   if (!email) { showAuthError('Digite seu e-mail acima primeiro.'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email);
-  if (error) { showAuthError(translateAuthError(error.message)); return; }
-  showAuthError('✓ E-mail de recuperação enviado!');
+  showAuthError(error ? translateAuthError(error.message) : '✓ E-mail de recuperação enviado!');
 }
-
-async function doSignout() {
-  await sb.auth.signOut();
-}
-
-function showAuthError(msg) {
-  document.getElementById('auth-error').textContent = msg;
-}
-
+async function doSignout() { await sb.auth.signOut(); }
+function showAuthError(msg) { document.getElementById('auth-error').textContent = msg; }
 function translateAuthError(msg) {
   if (msg.includes('Invalid login')) return 'E-mail ou senha incorretos.';
   if (msg.includes('Email not confirmed')) return 'Confirme seu e-mail antes de entrar.';
-  if (msg.includes('already registered')) return 'Este e-mail já possui conta. Faça login.';
+  if (msg.includes('already registered')) return 'Este e-mail já possui conta.';
   if (msg.includes('Password should')) return 'Senha muito curta (mínimo 6 caracteres).';
   return msg;
 }
@@ -502,168 +394,141 @@ function translateAuthError(msg) {
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
-    document.getElementById('authScreen').classList.remove('visible');
-    document.getElementById('appLayout').classList.add('visible');
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('appLayout').classList.remove('hidden');
     const email = currentUser.email || '';
     document.getElementById('userEmail').textContent = email;
     document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
     document.getElementById('topbarDate').textContent =
-      new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+      new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
     initSliders();
     await loadItems();
   } else {
-    currentUser = null;
-    items = [];
-    document.getElementById('authScreen').classList.add('visible');
-    document.getElementById('appLayout').classList.remove('visible');
+    currentUser = null; items = [];
+    document.getElementById('authScreen').classList.remove('hidden');
+    document.getElementById('appLayout').classList.add('hidden');
   }
 });
 
 // ══ SCORE ══
 function costPeso(c) {
-  if (!c||c<=0) return 0;
-  if (c<100) return 1; if (c<300) return 2; if (c<600) return 3;
-  if (c<1000) return 4; if (c<2000) return 5; if (c<3500) return 6;
-  if (c<5000) return 7; if (c<8000) return 8; if (c<15000) return 9;
+  if (!c || c <= 0) return 0;
+  if (c < 100) return 1; if (c < 300) return 2; if (c < 600) return 3;
+  if (c < 1000) return 4; if (c < 2000) return 5; if (c < 3500) return 6;
+  if (c < 5000) return 7; if (c < 8000) return 8; if (c < 15000) return 9;
   return 10;
 }
-function calcScore(it) {
-  return Math.max(0, it.urgencia*0.35 + it.desejo*0.30 + it.impacto*0.25 - costPeso(it.custo)*0.10);
-}
+function calcScore(it) { return Math.max(0, it.urgencia * 0.35 + it.desejo * 0.30 + it.impacto * 0.25 - costPeso(it.custo) * 0.10); }
 
 // ══ SLIDERS ══
-function initSliders() { ['urg','des','imp'].forEach(k => syncSlider('f',k,5)); }
-
+function initSliders() { ['urg', 'des', 'imp'].forEach(k => syncSlider('f', k, 5)); }
 function syncSlider(px, key, val) {
   val = parseInt(val);
-  const b = document.getElementById(px+'b-'+key);
-  if (b) b.innerHTML = val+'<span class="dn">/10</span>';
-  const f = document.getElementById(px+'f-'+key);
-  if (f) f.style.width = ((val-1)/9*100)+'%';
-  if (px==='f') {
-    const z = val<=3?0:val<=7?1:2;
-    [0,1,2].forEach(i => { const el=document.getElementById('fh-'+key+'-'+i); if(el) el.classList.toggle('lit',i===z); });
+  const b = document.getElementById(px + 'b-' + key);
+  if (b) b.innerHTML = val + '<span class="font-normal text-gray-400">/10</span>';
+  const f = document.getElementById(px + 'f-' + key);
+  if (f) f.style.width = ((val - 1) / 9 * 100) + '%';
+  if (px === 'f') {
+    const z = val <= 3 ? 0 : val <= 7 ? 1 : 2;
+    [0, 1, 2].forEach(i => {
+      const el = document.getElementById('fh-' + key + '-' + i);
+      if (el) { el.style.color = i === z ? '#0071e3' : ''; el.style.fontWeight = i === z ? '600' : ''; }
+    });
   }
 }
 function syncCostSlider() {
-  const c = parseFloat(document.getElementById('f-custo').value)||0, p = costPeso(c);
+  const c = getCurrencyVal(document.getElementById('f-custo')), p = costPeso(c);
   const b = document.getElementById('fb-cst'), f = document.getElementById('ff-cst');
-  if (p===0) { b.innerHTML='—'; b.style.cssText='background:rgba(0,0,0,0.05);color:var(--muted)'; f.style.width='0%'; }
-  else { b.innerHTML=p+'<span class="dn">/10</span>'; b.style.cssText=''; f.style.width=((p-1)/9*100)+'%'; }
+  if (p === 0) { b.innerHTML = '—'; b.style.cssText = ''; b.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-400'; f.style.width = '0%'; }
+  else { b.innerHTML = p + '<span class="font-normal text-gray-400">/10</span>'; b.style.background = 'rgba(0,113,227,.08)'; b.style.color = '#0071e3'; f.style.width = ((p - 1) / 9 * 100) + '%'; }
 }
 
-// ══ SUPABASE CRUD ══
+// ══ CRUD ══
 async function loadItems() {
-  document.getElementById('list').innerHTML = '<div class="loading-row">Carregando…</div>';
+  document.getElementById('list').innerHTML = '<div class="text-center py-10 text-sm text-gray-400">Carregando…</div>';
   const { data, error } = await sb.from('items').select('*').order('created_at', { ascending: false });
   if (error) { toast('Erro ao carregar itens', true); return; }
-  items = data || [];
-  render();
-  updateLastUpdated();
+  items = data || []; render(); updateLastUpdated();
 }
 
 async function addItem() {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { document.getElementById('f-nome').focus(); return; }
   const btn = document.getElementById('btn-add');
-  const btnOrig = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg> Adicionar item';
+  const btnOrig = '<i data-lucide="plus" style="width:12px;height:12px"></i>Adicionar item';
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Salvando…';
-
   try {
-    const newItem = {
-      user_id: currentUser.id,
-      nome,
+    const { data, error } = await sb.from('items').insert({
+      user_id: currentUser.id, nome,
       categoria: document.getElementById('f-cat').value,
-      custo: parseFloat(document.getElementById('f-custo').value)||0,
+      custo: getCurrencyVal(document.getElementById('f-custo')),
       nota: document.getElementById('f-nota').value.trim(),
       urgencia: +document.getElementById('f-urgencia').value,
-      desejo:   +document.getElementById('f-desejo').value,
-      impacto:  +document.getElementById('f-impacto').value,
+      desejo: +document.getElementById('f-desejo').value,
+      impacto: +document.getElementById('f-impacto').value,
       acquired: false,
-    };
-
-    const { data, error } = await sb.from('items').insert(newItem).select().single();
-    if (error) { toast('Erro ao salvar: '+error.message, true); return; }
-    items.unshift(data);
-    resetForm(); render(); updateLastUpdated(); toast('Item adicionado ✓');
-  } catch(e) {
-    toast('Erro inesperado: '+e.message, true);
-  } finally {
-    btn.disabled = false; btn.innerHTML = btnOrig;
-  }
+    }).select().single();
+    if (error) { toast('Erro ao salvar: ' + error.message, true); return; }
+    items.unshift(data); resetForm(); render(); updateLastUpdated(); toast('Item adicionado ✓');
+  } catch (e) { toast('Erro: ' + e.message, true); }
+  finally { btn.disabled = false; btn.innerHTML = btnOrig; lucide.createIcons(); }
 }
 
 async function toggleAcq(id) {
-  const it = items.find(i=>i.id===id); if (!it) return;
+  const it = items.find(i => i.id === id); if (!it) return;
   const newVal = !it.acquired;
-  const update = { acquired: newVal, acquired_at: newVal ? new Date().toISOString() : null };
-  const { error } = await sb.from('items').update(update).eq('id', id).eq('user_id', currentUser.id);
+  const { error } = await sb.from('items').update({ acquired: newVal, acquired_at: newVal ? new Date().toISOString() : null }).eq('id', id).eq('user_id', currentUser.id);
   if (error) { toast('Erro ao atualizar', true); return; }
-  Object.assign(it, update);
-  render(); updateLastUpdated();
+  Object.assign(it, { acquired: newVal }); render(); updateLastUpdated();
 }
 
 async function delItem(id) {
   if (!confirm('Remover este item permanentemente?')) return;
   const { error } = await sb.from('items').delete().eq('id', id).eq('user_id', currentUser.id);
   if (error) { toast('Erro ao remover', true); return; }
-  items = items.filter(i=>i.id!==id);
-  render(); updateLastUpdated(); toast('Item removido');
+  items = items.filter(i => i.id !== id); render(); updateLastUpdated(); toast('Item removido');
 }
 
 function openEdit(id) {
-  const it = items.find(i=>i.id===id); if (!it) return;
+  const it = items.find(i => i.id === id); if (!it) return;
   editId = id;
-  document.getElementById('e-nome').value  = it.nome;
-  document.getElementById('e-cat').value   = it.categoria;
-  document.getElementById('e-custo').value = it.custo||'';
-  document.getElementById('e-nota').value  = it.nota||'';
+  document.getElementById('e-nome').value = it.nome;
+  document.getElementById('e-cat').value = it.categoria;
+  setCurrencyVal(document.getElementById('e-custo'), it.custo);
+  document.getElementById('e-nota').value = it.nota || '';
   document.getElementById('e-urgencia').value = it.urgencia;
-  document.getElementById('e-desejo').value   = it.desejo;
-  document.getElementById('e-impacto').value  = it.impacto;
-  syncSlider('e','urg',it.urgencia); syncSlider('e','des',it.desejo); syncSlider('e','imp',it.impacto);
-  document.getElementById('modal').classList.add('open');
+  document.getElementById('e-desejo').value = it.desejo;
+  document.getElementById('e-impacto').value = it.impacto;
+  syncSlider('e', 'urg', it.urgencia); syncSlider('e', 'des', it.desejo); syncSlider('e', 'imp', it.impacto);
+  document.getElementById('modal').classList.remove('hidden');
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); editId=null; }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); editId = null; }
 
 async function saveEdit() {
-  const it = items.find(i=>i.id===editId); if (!it) return;
+  const it = items.find(i => i.id === editId); if (!it) return;
   const update = {
-    nome:      document.getElementById('e-nome').value.trim()||it.nome,
+    nome: document.getElementById('e-nome').value.trim() || it.nome,
     categoria: document.getElementById('e-cat').value,
-    custo:     parseFloat(document.getElementById('e-custo').value)||0,
-    nota:      document.getElementById('e-nota').value.trim(),
-    urgencia:  +document.getElementById('e-urgencia').value,
-    desejo:    +document.getElementById('e-desejo').value,
-    impacto:   +document.getElementById('e-impacto').value,
+    custo: getCurrencyVal(document.getElementById('e-custo')),
+    nota: document.getElementById('e-nota').value.trim(),
+    urgencia: +document.getElementById('e-urgencia').value,
+    desejo: +document.getElementById('e-desejo').value,
+    impacto: +document.getElementById('e-impacto').value,
   };
-
-  // save history
-  const changes = Object.entries(update).filter(([k,v]) => String(it[k]) !== String(v));
-  if (changes.length) {
-    const histRows = changes.map(([k,v]) => ({
-      item_id: it.id, user_id: currentUser.id,
-      campo: k, valor_anterior: String(it[k]), valor_novo: String(v)
-    }));
-    await sb.from('items_history').insert(histRows);
-  }
-
+  const changes = Object.entries(update).filter(([k, v]) => String(it[k]) !== String(v));
+  if (changes.length) await sb.from('items_history').insert(changes.map(([k, v]) => ({ item_id: it.id, user_id: currentUser.id, campo: k, valor_anterior: String(it[k]), valor_novo: String(v) })));
   const { error } = await sb.from('items').update(update).eq('id', editId).eq('user_id', currentUser.id);
   if (error) { toast('Erro ao salvar', true); return; }
-  Object.assign(it, update);
-  closeModal(); render(); updateLastUpdated(); toast('Item atualizado ✓');
+  Object.assign(it, update); closeModal(); render(); updateLastUpdated(); toast('Item atualizado ✓');
 }
 
 // ══ EXPORT / IMPORT ══
 function exportJSON() {
-  const blob = new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href=url; a.download='wishlist-'+new Date().toISOString().slice(0,10)+'.json';
-  a.click(); URL.revokeObjectURL(url); toast('Backup exportado ✓');
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' })), download: 'wishlist-' + new Date().toISOString().slice(0, 10) + '.json' });
+  a.click(); toast('Backup exportado ✓');
 }
 async function importJSON() {
-  const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
   inp.onchange = async e => {
     const file = e.target.files[0]; if (!file) return;
     const r = new FileReader();
@@ -671,11 +536,10 @@ async function importJSON() {
       try {
         const parsed = JSON.parse(ev.target.result);
         if (!Array.isArray(parsed)) throw new Error();
-        if (!confirm('Importar '+parsed.length+' itens para o banco? Itens existentes NÃO serão apagados.')) return;
-        const rows = parsed.map(it => ({...it, user_id: currentUser.id, id: Date.now()+Math.random()}));
-        const { error } = await sb.from('items').insert(rows);
-        if (error) { toast('Erro na importação: '+error.message, true); return; }
-        await loadItems(); toast(parsed.length+' itens importados ✓');
+        if (!confirm('Importar ' + parsed.length + ' itens? Itens existentes NÃO serão apagados.')) return;
+        const { error } = await sb.from('items').insert(parsed.map(it => ({ ...it, id: undefined, user_id: currentUser.id })));
+        if (error) { toast('Erro na importação: ' + error.message, true); return; }
+        await loadItems(); toast(parsed.length + ' itens importados ✓');
       } catch { toast('Arquivo inválido', true); }
     };
     r.readAsText(file);
@@ -686,139 +550,154 @@ async function importJSON() {
 // ══ FILTER / SORT ══
 function setFilter(cat) {
   filter = cat;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const a = b.dataset.cat === cat;
+    b.style.color = a ? '#0071e3' : '#6b7280';
+    b.style.borderBottomColor = a ? '#0071e3' : 'transparent';
+    b.style.fontWeight = a ? '600' : '500';
+  });
   render();
 }
 function setSort(s) {
   sort = s;
-  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===s));
+  document.querySelectorAll('.seg-btn').forEach(b => {
+    const a = b.dataset.sort === s;
+    b.className = a
+      ? 'seg-btn text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-900 transition-all'
+      : 'seg-btn text-[11px] font-medium px-2.5 py-1 rounded-md text-gray-400 hover:text-gray-600 transition-all';
+  });
   render();
 }
 
-// ══ RESET FORM ══
 function resetForm() {
-  ['f-nome','f-nota'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-custo').value='';
-  document.getElementById('f-urgencia').value=5; document.getElementById('f-desejo').value=5; document.getElementById('f-impacto').value=5;
-  ['urg','des','imp'].forEach(k=>syncSlider('f',k,5)); syncCostSlider();
+  ['f-nome', 'f-nota'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-custo').value = '';
+  document.getElementById('f-urgencia').value = 5; document.getElementById('f-desejo').value = 5; document.getElementById('f-impacto').value = 5;
+  ['urg', 'des', 'imp'].forEach(k => syncSlider('f', k, 5)); syncCostSlider();
 }
 
 // ══ CHARTS ══
 function drawBarChart(data) {
-  const svg = document.getElementById('bar-chart'); if (!data.length){svg.innerHTML='';return;}
-  const W = Math.max(200, svg.parentElement.clientWidth-36), H=120;
-  const maxV = Math.max(...data.map(d=>d.value),0.1);
-  const n=data.length, barW=Math.max(8,Math.min(34,(W-n*6)/n)), gap=(W-n*barW)/(n+1), labelH=26, chartH=H-labelH;
-  let bars='',labels='';
-  data.forEach((d,i)=>{
-    const x=gap+i*(barW+gap), bh=Math.max(3,(d.value/maxV)*(chartH-10)), y=chartH-bh, isTop=i===0;
-    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="4" fill="${isTop?'rgb(0,113,227)':'rgba(0,113,227,0.22)'}"/>`;
-    bars+=`<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="${isTop?'rgb(0,113,227)':'#8a8aa8'}" font-family="-apple-system,Helvetica Neue,Arial" font-weight="600">${d.value.toFixed(1)}</text>`;
-    const lbl=d.label.length>9?d.label.substring(0,8)+'…':d.label;
-    labels+=`<text x="${x+barW/2}" y="${H-3}" text-anchor="middle" font-size="7.5" fill="#8a8aa8" font-family="-apple-system,Helvetica Neue,Arial">${lbl}</text>`;
+  const svg = document.getElementById('bar-chart'); if (!data.length) { svg.innerHTML = ''; return; }
+  const W = Math.max(200, svg.parentElement.clientWidth - 36), H = 120;
+  const maxV = Math.max(...data.map(d => d.value), 0.1);
+  const n = data.length, barW = Math.max(8, Math.min(34, (W - n * 6) / n)), gap = (W - n * barW) / (n + 1), labelH = 26, chartH = H - labelH;
+  let bars = '', labels = '';
+  data.forEach((d, i) => {
+    const x = gap + i * (barW + gap), bh = Math.max(3, (d.value / maxV) * (chartH - 10)), y = chartH - bh, isTop = i === 0;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${isTop ? '#0071e3' : 'rgba(0,113,227,.2)'}"/>`;
+    bars += `<text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" font-size="8" fill="${isTop ? '#0071e3' : '#9ca3af'}" font-family="-apple-system,Helvetica Neue,Arial" font-weight="600">${d.value.toFixed(1)}</text>`;
+    labels += `<text x="${x + barW / 2}" y="${H - 3}" text-anchor="middle" font-size="7.5" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">${d.label.length > 9 ? d.label.slice(0, 8) + '…' : d.label}</text>`;
   });
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  svg.innerHTML=`<line x1="0" y1="${chartH}" x2="${W}" y2="${chartH}" stroke="#eeeef4" stroke-width="1"/>${bars}${labels}`;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `<line x1="0" y1="${chartH}" x2="${W}" y2="${chartH}" stroke="#f3f4f6" stroke-width="1"/>${bars}${labels}`;
 }
 
 function drawDonut(data) {
-  const svg=document.getElementById('donut-chart'), legend=document.getElementById('donut-legend');
-  if(!data.length){svg.innerHTML='';legend.innerHTML='';return;}
-  const total=data.reduce((s,d)=>s+d.value,0), cx=50,cy=50,r=38,inner=26;
-  let startAngle=-Math.PI/2, paths='';
-  data.forEach((d,i)=>{
-    const angle=(d.value/total)*Math.PI*2, endAngle=startAngle+angle;
-    const x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
-    const x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
-    const ix1=cx+inner*Math.cos(startAngle),iy1=cy+inner*Math.sin(startAngle);
-    const ix2=cx+inner*Math.cos(endAngle),iy2=cy+inner*Math.sin(endAngle);
-    const large=angle>Math.PI?1:0;
-    paths+=`<path d="M${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} L${ix2},${iy2} A${inner},${inner} 0 ${large} 0 ${ix1},${iy1} Z" fill="${d.color}" opacity="0.9"/>`;
-    startAngle=endAngle;
+  const svg = document.getElementById('donut-chart'), legend = document.getElementById('donut-legend');
+  if (!data.length) { svg.innerHTML = ''; legend.innerHTML = ''; return; }
+  const total = data.reduce((s, d) => s + d.value, 0), cx = 50, cy = 50, r = 38, inner = 26;
+  let start = -Math.PI / 2, paths = '';
+  data.forEach(d => {
+    const angle = (d.value / total) * Math.PI * 2, end = start + angle;
+    const [x1, y1] = [cx + r * Math.cos(start), cy + r * Math.sin(start)];
+    const [x2, y2] = [cx + r * Math.cos(end), cy + r * Math.sin(end)];
+    const [ix1, iy1] = [cx + inner * Math.cos(start), cy + inner * Math.sin(start)];
+    const [ix2, iy2] = [cx + inner * Math.cos(end), cy + inner * Math.sin(end)];
+    paths += `<path d="M${x1},${y1} A${r},${r} 0 ${angle > Math.PI ? 1 : 0} 1 ${x2},${y2} L${ix2},${iy2} A${inner},${inner} 0 ${angle > Math.PI ? 1 : 0} 0 ${ix1},${iy1} Z" fill="${d.color}" opacity=".9"/>`;
+    start = end;
   });
-  paths+=`<text x="50" y="47" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a2e" font-family="-apple-system,Helvetica Neue,Arial">${total}</text><text x="50" y="57" text-anchor="middle" font-size="7" fill="#8a8aa8" font-family="-apple-system,Helvetica Neue,Arial">itens</text>`;
-  svg.innerHTML=paths;
-  legend.innerHTML=data.slice(0,5).map(d=>`<div class="legend-item"><div class="legend-dot" style="background:${d.color}"></div><div class="legend-label">${d.label}</div><div class="legend-val">${d.value}</div></div>`).join('');
+  svg.innerHTML = paths + `<text x="50" y="47" text-anchor="middle" font-size="13" font-weight="700" fill="#111827" font-family="-apple-system,Helvetica Neue,Arial">${total}</text><text x="50" y="57" text-anchor="middle" font-size="7" fill="#9ca3af" font-family="-apple-system,Helvetica Neue,Arial">itens</text>`;
+  legend.innerHTML = data.slice(0, 5).map(d => `<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${d.color}"></div><span class="text-[11px] text-gray-600 truncate flex-1">${d.label}</span><span class="text-[11px] font-semibold text-gray-900">${d.value}</span></div>`).join('');
 }
 
 // ══ TABS ══
 function updateTabs() {
-  const cats=[...new Set(items.map(i=>i.categoria))].sort();
-  const wrap=document.getElementById('tab-row');
-  const allCount=items.filter(i=>!i.acquired).length;
-  let html=`<button class="tab-btn ${filter==='Todos'?'active':''}" data-cat="Todos" onclick="setFilter('Todos')">Todos <span class="tab-count">${allCount}</span></button>`;
-  cats.forEach(cat=>{
-    const n=items.filter(i=>i.categoria===cat&&!i.acquired).length;
-    html+=`<button class="tab-btn ${filter===cat?'active':''}" data-cat="${cat}" onclick="setFilter('${cat}')">${cat} <span class="tab-count" style="background:${n?'var(--blue)':'var(--muted-2)'}">${n}</span></button>`;
+  const cats = [...new Set(items.map(i => i.categoria))].sort();
+  const allCount = items.filter(i => !i.acquired).length;
+  let html = `<button class="tab-btn text-xs py-2.5 px-3 border-b-2 whitespace-nowrap transition-all" data-cat="Todos" onclick="setFilter('Todos')" style="color:#0071e3;border-bottom-color:#0071e3;font-weight:600">Todos <span class="inline-flex items-center justify-center text-white text-[9px] font-bold rounded-full px-1.5 ml-0.5" style="background:#0071e3;min-width:16px">${allCount}</span></button>`;
+  cats.forEach(cat => {
+    const n = items.filter(i => i.categoria === cat && !i.acquired).length;
+    const a = filter === cat;
+    html += `<button class="tab-btn text-xs py-2.5 px-3 border-b-2 whitespace-nowrap transition-all" data-cat="${cat}" onclick="setFilter('${cat}')" style="color:${a ? '#0071e3' : '#6b7280'};border-bottom-color:${a ? '#0071e3' : 'transparent'};font-weight:${a ? '600' : '500'}">${cat} <span class="inline-flex items-center justify-center text-white text-[9px] font-bold rounded-full px-1.5 ml-0.5" style="background:${n ? '#0071e3' : '#d1d5db'};min-width:16px">${n}</span></button>`;
   });
-  wrap.innerHTML=html;
+  document.getElementById('tab-row').innerHTML = html;
 }
 
 // ══ RENDER ══
 function render() {
-  const showAcq=document.getElementById('showAcq').checked;
-  let list=items.filter(i=>{
-    if(!showAcq&&i.acquired) return false;
-    if(filter!=='Todos'&&i.categoria!==filter) return false;
-    return true;
-  });
-  const fns={score:(a,b)=>calcScore(b)-calcScore(a),urgencia:(a,b)=>b.urgencia-a.urgencia,'custo-asc':(a,b)=>(a.custo||0)-(b.custo||0),'custo-desc':(a,b)=>(b.custo||0)-(a.custo||0),nome:(a,b)=>a.nome.localeCompare(b.nome)};
-  list.sort(fns[sort]||fns.score);
+  const showAcq = document.getElementById('showAcq').checked;
+  let list = items.filter(i => (!showAcq && i.acquired) ? false : !(filter !== 'Todos' && i.categoria !== filter));
+  const fns = { score: (a, b) => calcScore(b) - calcScore(a), urgencia: (a, b) => b.urgencia - a.urgencia, 'custo-asc': (a, b) => (a.custo || 0) - (b.custo || 0), 'custo-desc': (a, b) => (b.custo || 0) - (a.custo || 0), nome: (a, b) => a.nome.localeCompare(b.nome) };
+  list.sort(fns[sort] || fns.score);
 
-  const active=items.filter(i=>!i.acquired), acqList=items.filter(i=>i.acquired);
-  const total=active.reduce((s,i)=>s+(i.custo||0),0);
-  const scores=active.map(calcScore);
-  const topItem=[...active].sort((a,b)=>calcScore(b)-calcScore(a))[0];
-  const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:0;
+  const active = items.filter(i => !i.acquired), acq = items.filter(i => i.acquired);
+  const total = active.reduce((s, i) => s + (i.custo || 0), 0);
+  const scores = active.map(calcScore);
+  const topItem = [...active].sort((a, b) => calcScore(b) - calcScore(a))[0];
+  const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
 
-  document.getElementById('k-ativos').textContent=active.length;
-  document.getElementById('k-ativos-sub').innerHTML=`<span class="nu">${acqList.length}</span> adquiridos`;
-  document.getElementById('k-custo').textContent='R$ '+total.toLocaleString('pt-BR',{maximumFractionDigits:0});
-  document.getElementById('k-custo-sub').textContent=active.length+' itens pendentes';
-  document.getElementById('k-topscore').textContent=topItem?calcScore(topItem).toFixed(2):'—';
-  document.getElementById('k-topname').textContent=topItem?topItem.nome.substring(0,22)+(topItem.nome.length>22?'…':''):'—';
-  document.getElementById('k-avg').textContent=scores.length?avg.toFixed(2):'—';
+  document.getElementById('k-ativos').textContent = active.length;
+  document.getElementById('k-ativos-sub').innerHTML = `<span style="color:rgb(255,149,0);font-weight:600">${acq.length}</span> adquiridos`;
+  document.getElementById('k-custo').textContent = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  document.getElementById('k-custo-sub').textContent = active.length + ' itens pendentes';
+  document.getElementById('k-topscore').textContent = topItem ? calcScore(topItem).toFixed(2) : '—';
+  document.getElementById('k-topname').textContent = topItem ? topItem.nome.slice(0, 22) + (topItem.nome.length > 22 ? '…' : '') : '—';
+  document.getElementById('k-avg').textContent = scores.length ? avg.toFixed(2) : '—';
 
-  const barData=[...active].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,8).map(it=>({label:it.nome,value:calcScore(it)}));
-  setTimeout(()=>drawBarChart(barData),0);
-
-  const catCount={};
-  active.forEach(i=>{catCount[i.categoria]=(catCount[i.categoria]||0)+1;});
-  const donutData=Object.entries(catCount).sort((a,b)=>b[1]-a[1]).map(([cat,n],i)=>({label:cat,value:n,color:DONUT_COLORS[i%DONUT_COLORS.length]}));
-  drawDonut(donutData);
-
+  setTimeout(() => drawBarChart([...active].sort((a, b) => calcScore(b) - calcScore(a)).slice(0, 8).map(it => ({ label: it.nome, value: calcScore(it) }))), 0);
+  const catCount = {}; active.forEach(i => { catCount[i.categoria] = (catCount[i.categoria] || 0) + 1; });
+  drawDonut(Object.entries(catCount).sort((a, b) => b[1] - a[1]).map(([cat, n], i) => ({ label: cat, value: n, color: DONUT_COLORS[i % DONUT_COLORS.length] })));
   updateTabs();
 
-  const container=document.getElementById('list');
-  if(!list.length){container.innerHTML=`<div class="empty">${items.length===0?'Nenhum item ainda. Adicione na barra lateral.':'Nenhum item para este filtro.'}</div>`;return;}
+  const container = document.getElementById('list');
+  if (!list.length) { container.innerHTML = `<div class="text-center py-12 text-sm text-gray-400">${items.length === 0 ? 'Nenhum item ainda. Adicione na barra lateral.' : 'Nenhum item para este filtro.'}</div>`; return; }
 
-  container.innerHTML=list.map((it,idx)=>{
-    const score=calcScore(it), cc=CAT[it.categoria]||CAT['Outro'], cp=costPeso(it.custo), isTop=idx===0&&!it.acquired;
-    return `<div class="tbl-row ${it.acquired?'acquired':''}" style="animation-delay:${idx*0.022}s">
-      <div class="rank ${isTop?'top':''}">${it.acquired?'✓':(idx+1)}</div>
-      <div><div class="item-name">${h(it.nome)}</div>${it.nota?`<div class="item-note">${h(it.nota)}</div>`:''}</div>
-      <div><span class="cat-pill" style="background:${cc.bg};color:${cc.color}">${it.categoria}</span></div>
-      <div class="mini-col"><div class="mini-val">${it.urgencia}</div><div class="mini-track"><div class="mini-fill" style="width:${it.urgencia*10}%;background:rgb(0,113,227);opacity:.75"></div></div></div>
-      <div class="mini-col"><div class="mini-val">${it.desejo}</div><div class="mini-track"><div class="mini-fill" style="width:${it.desejo*10}%;background:rgb(0,113,227);opacity:.5"></div></div></div>
-      <div class="mini-col"><div class="mini-val">${it.impacto}</div><div class="mini-track"><div class="mini-fill" style="width:${it.impacto*10}%;background:rgb(0,113,227);opacity:.35"></div></div></div>
-      <div class="score-col"><div class="score-val">${score.toFixed(2)}</div><div class="score-cost">${it.custo?'R$'+it.custo.toLocaleString('pt-BR')+(cp?' · peso '+cp:''):'—'}</div><div class="score-track"><div class="score-fill" style="width:${Math.min(100,score/10*100)}%"></div></div></div>
-      <div class="row-acts">
-        <button class="icon-btn check" onclick="toggleAcq(${it.id})" title="${it.acquired?'Desfazer':'Adquirido'}">${it.acquired?'↩':'✓'}</button>
-        <button class="icon-btn" onclick="openEdit(${it.id})" title="Editar">✎</button>
-        <button class="icon-btn danger" onclick="delItem(${it.id})" title="Remover">✕</button>
+  container.innerHTML = list.map((it, idx) => {
+    const score = calcScore(it), cc = CAT[it.categoria] || CAT['Outro'], cp = costPeso(it.custo), isTop = idx === 0 && !it.acquired;
+    return `<div class="grid px-5 py-2.5 border-b border-gray-50 items-center hover:bg-gray-50 transition-colors anim-fadeup ${it.acquired ? 'opacity-40' : ''}" style="grid-template-columns:28px 1fr 76px 38px 38px 38px 90px 64px;gap:8px;animation-delay:${idx * 0.022}s">
+      <div class="text-xs font-bold text-center" style="color:${isTop ? '#0071e3' : '#d1d5db'}">${it.acquired ? '✓' : idx + 1}</div>
+      <div class="min-w-0 overflow-hidden">
+        <div class="text-xs font-medium truncate ${it.acquired ? 'line-through text-gray-400' : 'text-gray-900'}">${h(it.nome)}</div>
+        ${it.nota ? `<div class="text-[10px] text-gray-400 truncate mt-0.5">${h(it.nota)}</div>` : ''}
+      </div>
+      <div><span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style="background:${cc.bg};color:${cc.color}">${it.categoria}</span></div>
+      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.urgencia}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.urgencia * 10}%;background:rgba(0,113,227,.7)"></div></div></div>
+      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.desejo}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.desejo * 10}%;background:rgba(0,113,227,.5)"></div></div></div>
+      <div class="flex flex-col items-center gap-0.5"><span class="text-xs font-semibold text-gray-700">${it.impacto}</span><div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${it.impacto * 10}%;background:rgba(0,113,227,.35)"></div></div></div>
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm font-bold tracking-tight" style="color:#0071e3">${score.toFixed(2)}</span>
+        <span class="text-[10px] text-gray-400">${it.custo ? 'R$ ' + it.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + (cp ? ' · p' + cp : '') : '—'}</span>
+        <div class="w-full h-0.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${Math.min(100, score / 10 * 100)}%;background:#0071e3"></div></div>
+      </div>
+      <div class="flex gap-1 justify-end">
+        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-green-50 hover:border-green-200 hover:text-green-600 transition-all" onclick="toggleAcq(${it.id})" title="${it.acquired ? 'Desfazer' : 'Adquirido'}"><i data-lucide="${it.acquired ? 'undo-2' : 'check'}" style="width:11px;height:11px"></i></button>
+        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all" onclick="openEdit(${it.id})" title="Editar"><i data-lucide="pencil" style="width:11px;height:11px"></i></button>
+        <button class="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all" onclick="delItem(${it.id})" title="Remover"><i data-lucide="trash-2" style="width:11px;height:11px"></i></button>
       </div>
     </div>`;
   }).join('');
+  lucide.createIcons();
 }
 
-function h(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function updateLastUpdated(){document.getElementById('lastUpdated').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
-function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);}
+function h(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function updateLastUpdated() { document.getElementById('lastUpdated').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
+function toast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? 'rgb(239,68,68)' : 'rgb(17,24,39)';
+  t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(8px)'; }, 2800);
+}
 
-document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.getElementById('f-nome').addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
-document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-window.addEventListener('resize',()=>render());
+document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+document.getElementById('f-nome').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('f-custo').addEventListener('input', e => { fmtCurrencyInput(e); syncCostSlider(); });
+document.getElementById('e-custo').addEventListener('input', fmtCurrencyInput);
+window.addEventListener('resize', () => render());
+document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 </body>
 </html>
