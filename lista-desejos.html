@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wishlist</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: rgb(0, 113, 227);
+    --blue-light: rgba(0, 113, 227, 0.08);
+    --blue-mid: rgba(0, 113, 227, 0.18);
+    --bg: #f5f5f7;
+    --white: #ffffff;
+    --surface: rgba(255,255,255,0.82);
+    --surface-solid: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.14);
+    --text: #1d1d1f;
+    --text-2: #3a3a3c;
+    --muted: #86868b;
+    --muted-2: #aeaeb2;
+    --red: rgb(255, 59, 48);
+    --green: rgb(52, 199, 89);
+    --font: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px 64px;
+  }
+
+  .app { max-width: 880px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .app-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 28px; gap: 16px;
+  }
+
+  .app-header h1 {
+    font-size: 2rem; font-weight: 700; letter-spacing: -0.04em;
+    color: var(--text); line-height: 1;
+  }
+
+  .app-header .subtitle {
+    font-size: 0.78rem; color: var(--muted); margin-top: 5px;
+    letter-spacing: -0.01em;
+  }
+
+  .header-date {
+    font-size: 0.72rem; color: var(--muted); letter-spacing: -0.01em;
+    text-align: right; line-height: 1.6;
+  }
+
+  /* ── SUMMARY CARDS ── */
+  .summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .s-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 16px 18px; box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+  }
+
+  .s-card:hover { box-shadow: var(--shadow); }
+
+  .s-label {
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  }
+
+  .s-value {
+    font-size: 1.5rem; font-weight: 700; letter-spacing: -0.04em;
+    color: var(--text); line-height: 1;
+  }
+
+  .s-value.blue { color: var(--blue); }
+
+  .s-sub {
+    font-size: 0.68rem; color: var(--muted); margin-top: 4px;
+    letter-spacing: -0.01em; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── ADD SECTION ── */
+  .add-section {
+    background: var(--white); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 20px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-grid.two { grid-template-columns: 2fr 1fr 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-label {
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--muted); text-transform: uppercase;
+  }
+
+  input[type=text], input[type=number], select {
+    font-family: var(--font);
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 11px;
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+    letter-spacing: -0.01em;
+  }
+
+  input[type=text]:focus, input[type=number]:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+    background: var(--white);
+  }
+
+  select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2386868b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+  /* ── SLIDERS ── */
+  .sliders-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 18px 24px; margin: 16px 0 0;
+  }
+
+  .slider-field { display: flex; flex-direction: column; gap: 8px; }
+
+  .slider-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .slider-name {
+    font-size: 0.72rem; font-weight: 600; color: var(--text-2);
+    letter-spacing: -0.01em;
+  }
+
+  .slider-badge {
+    font-size: 0.72rem; font-weight: 700; color: var(--blue);
+    background: var(--blue-light); border-radius: 6px;
+    padding: 2px 8px; letter-spacing: -0.01em;
+    min-width: 38px; text-align: center;
+    transition: background 0.15s;
+  }
+
+  .slider-badge .denom { font-weight: 400; color: var(--muted); font-size: 0.65rem; }
+
+  .slider-track-wrap { position: relative; height: 20px; display: flex; align-items: center; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; border-radius: 2px;
+    background: transparent; border: none; padding: 0;
+    outline: none; cursor: pointer; position: relative; z-index: 1;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px; background: #e5e5ea;
+  }
+  input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: #e5e5ea; }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%; margin-top: -7px;
+    background: var(--white); border: none;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.18);
+    cursor: pointer; transition: transform 0.12s, box-shadow 0.12s;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%; border: none;
+    background: var(--white);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.18);
+    cursor: pointer;
+  }
+  input[type=range]:hover::-webkit-slider-thumb {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 3px 10px rgba(0,0,0,0.22);
+  }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(0.95); }
+
+  .track-fill {
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    height: 4px; border-radius: 2px; background: var(--blue);
+    pointer-events: none; transition: width 0.08s;
+  }
+
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    padding: 0 1px;
+  }
+
+  .slider-labels span {
+    font-size: 0.6rem; color: var(--muted-2); letter-spacing: -0.01em;
+    text-align: center; line-height: 1.3;
+    transition: color 0.15s, font-weight 0.15s;
+    flex: 1;
+  }
+
+  .slider-labels span:last-child { text-align: right; }
+  .slider-labels span:first-child { text-align: left; }
+  .slider-labels span.lit { color: var(--blue); font-weight: 600; }
+
+  .cost-slider-note {
+    font-size: 0.6rem; color: var(--muted); margin-top: 2px; letter-spacing: -0.01em;
+  }
+
+  /* ── FORMULA BOX ── */
+  .formula-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 11px 14px;
+    margin-top: 16px; font-size: 0.68rem; color: var(--muted);
+    line-height: 1.7; letter-spacing: -0.01em;
+  }
+
+  .formula-box strong { color: var(--text-2); font-weight: 600; }
+
+  .pill {
+    display: inline-block; background: var(--white);
+    border: 1px solid var(--border-strong); border-radius: 5px;
+    padding: 1px 6px; font-size: 0.62rem; color: var(--text);
+    margin: 0 1px; font-weight: 500; vertical-align: middle;
+  }
+
+  /* ── FORM ACTIONS ── */
+  .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+  .btn {
+    font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+    border-radius: 980px; border: none; cursor: pointer;
+    padding: 8px 20px; letter-spacing: -0.01em;
+    transition: all 0.15s; line-height: 1;
+  }
+
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: rgb(0, 95, 200); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    background: rgba(0,0,0,0.05); color: var(--text-2); border: none;
+  }
+  .btn-ghost:hover { background: rgba(0,0,0,0.09); }
+
+  /* ── CONTROLS ROW ── */
+  .controls-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+
+  .seg-label {
+    font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--muted); margin-right: 2px;
+  }
+
+  /* Segmented control */
+  .seg {
+    display: flex; background: rgba(0,0,0,0.06); border-radius: 8px; padding: 2px;
+  }
+
+  .seg-btn {
+    font-family: var(--font); font-size: 0.72rem; font-weight: 500;
+    color: var(--muted); background: none; border: none; cursor: pointer;
+    padding: 4px 11px; border-radius: 6px; letter-spacing: -0.01em;
+    transition: all 0.15s; white-space: nowrap;
+  }
+
+  .seg-btn.active {
+    background: var(--white); color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.06);
+  }
+
+  /* Filter chips */
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+  .chip {
+    font-family: var(--font); font-size: 0.72rem; font-weight: 500;
+    letter-spacing: -0.01em; color: var(--muted); background: var(--white);
+    border: 1px solid var(--border-strong); border-radius: 980px;
+    padding: 4px 13px; cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .chip.active {
+    background: var(--blue); color: white; border-color: var(--blue);
+  }
+
+  .chip:hover:not(.active) { border-color: var(--blue); color: var(--blue); }
+
+  /* Toggle */
+  .toggle-wrap {
+    margin-left: auto; display: flex; align-items: center; gap: 7px;
+    font-size: 0.72rem; color: var(--muted); cursor: pointer; user-select: none;
+  }
+
+  /* iOS-style toggle */
+  .ios-toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .ios-toggle input { opacity: 0; width: 0; height: 0; }
+  .ios-toggle-track {
+    position: absolute; inset: 0; border-radius: 20px;
+    background: #e5e5ea; transition: background 0.2s; cursor: pointer;
+  }
+  .ios-toggle input:checked + .ios-toggle-track { background: var(--green); }
+  .ios-toggle-knob {
+    position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s; pointer-events: none;
+  }
+  .ios-toggle input:checked ~ .ios-toggle-knob { transform: translateX(16px); }
+
+  /* ── LIST ── */
+  .list-head {
+    display: grid;
+    grid-template-columns: 36px 1fr 88px 52px 52px 52px 96px 76px;
+    gap: 8px; padding: 0 14px 8px;
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.03em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .item-card {
+    display: grid;
+    grid-template-columns: 36px 1fr 88px 52px 52px 52px 96px 76px;
+    gap: 8px; padding: 12px 14px;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); margin-bottom: 6px;
+    align-items: center;
+    transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+    animation: fadeUp 0.22s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .item-card:hover {
+    box-shadow: var(--shadow);
+    border-color: rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+
+  .item-card.acquired { opacity: 0.42; }
+  .item-card.acquired .item-name { text-decoration: line-through; color: var(--muted); }
+
+  .rank {
+    font-size: 0.85rem; font-weight: 700; color: var(--muted-2);
+    text-align: center; letter-spacing: -0.02em;
+  }
+
+  .rank.top { color: var(--blue); }
+
+  .item-name {
+    font-size: 0.85rem; font-weight: 500; letter-spacing: -0.02em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .item-note {
+    font-size: 0.65rem; color: var(--muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+  }
+
+  .cat-pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.01em;
+    padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  }
+
+  .mini-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .mini-val { font-size: 0.78rem; font-weight: 600; color: var(--text-2); letter-spacing: -0.02em; }
+  .mini-track { width: 100%; height: 3px; background: #e5e5ea; border-radius: 2px; overflow: hidden; }
+  .mini-fill { height: 100%; border-radius: 2px; }
+
+  .score-col { display: flex; flex-direction: column; gap: 3px; }
+  .score-val { font-size: 0.85rem; font-weight: 700; color: var(--blue); letter-spacing: -0.03em; }
+  .score-cost { font-size: 0.6rem; color: var(--muted); letter-spacing: -0.01em; }
+  .score-track { width: 100%; height: 3px; background: #e5e5ea; border-radius: 2px; overflow: hidden; margin-top: 1px; }
+  .score-fill { height: 100%; background: var(--blue); border-radius: 2px; }
+
+  .row-actions { display: flex; gap: 5px; justify-content: flex-end; }
+
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--bg); border: 1px solid var(--border-strong);
+    color: var(--muted); font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.14s;
+  }
+  .icon-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+  .icon-btn.danger:hover { background: rgba(255,59,48,0.08); border-color: var(--red); color: var(--red); }
+  .icon-btn.check:hover { background: rgba(52,199,89,0.1); border-color: var(--green); color: var(--green); }
+
+  .empty {
+    text-align: center; padding: 56px 24px;
+    color: var(--muted); font-size: 0.85rem; letter-spacing: -0.01em;
+  }
+  .empty-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.3; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35); z-index: 200;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white); border-radius: 20px;
+    padding: 26px 26px 22px; width: 92%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.22s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.93) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal h2 {
+    font-size: 1.15rem; font-weight: 700; letter-spacing: -0.03em;
+    margin-bottom: 20px;
+  }
+
+  .modal-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin: 14px 0; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  @media (max-width: 680px) {
+    .summary { grid-template-columns: 1fr 1fr; }
+    .list-head, .item-card { grid-template-columns: 28px 1fr 72px 42px 92px 68px; }
+    .list-head > :nth-child(5), .item-card > :nth-child(6),
+    .list-head > :nth-child(4), .item-card > :nth-child(5) { display: none; }
+    .sliders-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.two { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div>
+      <h1>Wishlist</h1>
+      <div class="subtitle">priorização inteligente · dados salvos localmente</div>
+    </div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <div class="s-card">
+      <div class="s-label">Ativos</div>
+      <div class="s-value blue" id="s-ativos">0</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Adquiridos</div>
+      <div class="s-value" id="s-adq">0</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Custo total</div>
+      <div class="s-value" id="s-custo" style="font-size:1.1rem;margin-top:3px">R$ 0</div>
+    </div>
+    <div class="s-card">
+      <div class="s-label">Top prioridade</div>
+      <div class="s-sub" id="s-top" style="font-size:0.8rem;color:var(--text);font-weight:600;margin-top:4px">—</div>
+    </div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-section">
+    <div class="section-title">Novo item</div>
+
+    <div class="form-grid full" style="margin-bottom:10px">
+      <div class="field">
+        <div class="field-label">Nome</div>
+        <input id="f-nome" type="text" placeholder="ex: Toca-discos Technics SL-1200…">
+      </div>
+    </div>
+
+    <div class="form-grid two">
+      <div class="field">
+        <div class="field-label">Categoria</div>
+        <select id="f-cat">
+          <option>Tech</option><option>Casa</option><option>Vestuário</option>
+          <option>Saúde</option><option>Lazer</option><option>Trabalho</option>
+          <option>Áudio</option><option>Esporte</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">Custo estimado (R$)</div>
+        <input id="f-custo" type="number" placeholder="0" min="0" oninput="syncCostSlider('f')">
+      </div>
+      <div class="field">
+        <div class="field-label">Nota / link</div>
+        <input id="f-nota" type="text" placeholder="opcional…">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sliders-grid">
+      <!-- urgencia -->
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Urgência</span>
+          <span class="slider-badge" id="fb-urg">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ff-urg" style="width:44.4%"></div>
+          <input type="range" id="f-urgencia" min="1" max="10" value="5"
+            oninput="syncSlider('f','urg',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span id="fl-urg-0">pode esperar</span>
+          <span id="fl-urg-1">moderada</span>
+          <span id="fl-urg-2">preciso logo</span>
+        </div>
+      </div>
+
+      <!-- desejo -->
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Desejo</span>
+          <span class="slider-badge" id="fb-des">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ff-des" style="width:44.4%"></div>
+          <input type="range" id="f-desejo" min="1" max="10" value="5"
+            oninput="syncSlider('f','des',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span id="fl-des-0">seria legal</span>
+          <span id="fl-des-1">quero muito</span>
+          <span id="fl-des-2">preciso disso</span>
+        </div>
+      </div>
+
+      <!-- impacto -->
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Impacto na rotina</span>
+          <span class="slider-badge" id="fb-imp">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ff-imp" style="width:44.4%"></div>
+          <input type="range" id="f-impacto" min="1" max="10" value="5"
+            oninput="syncSlider('f','imp',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span id="fl-imp-0">cosmético</span>
+          <span id="fl-imp-1">melhora bastante</span>
+          <span id="fl-imp-2">muda o jogo</span>
+        </div>
+      </div>
+
+      <!-- custo peso (readonly) -->
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Peso do custo</span>
+          <span class="slider-badge" id="fb-cst" style="background:rgba(0,0,0,0.05);color:var(--muted)">—</span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ff-cst" style="width:0%;background:#aeaeb2"></div>
+          <input type="range" id="f-custo-vis" min="1" max="10" value="1"
+            disabled style="opacity:0;pointer-events:none">
+        </div>
+        <div class="slider-labels">
+          <span>barato</span><span>moderado</span><span>premium</span>
+        </div>
+        <div class="cost-slider-note">determinado pelo valor informado · penaliza o score</div>
+      </div>
+    </div>
+
+    <div class="formula-box">
+      <strong>Score</strong> =
+      <span class="pill">Urgência ×0.35</span> +
+      <span class="pill">Desejo ×0.30</span> +
+      <span class="pill">Impacto ×0.25</span> −
+      <span class="pill">Custo ×0.10</span>
+      &nbsp;· itens caros precisam compensar com urgência e impacto para subir no ranking.
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="resetForm()">Limpar</button>
+      <button class="btn btn-primary" onclick="addItem()">Adicionar</button>
+    </div>
+  </div>
+
+  <!-- FILTERS + SORT -->
+  <div class="chips" id="chips">
+    <span class="chip active" data-cat="Todos" onclick="setFilter('Todos')">Todos</span>
+  </div>
+
+  <div class="controls-row">
+    <span class="seg-label">Ordenar</span>
+    <div class="seg">
+      <button class="seg-btn active" data-sort="score" onclick="setSort('score')">Score</button>
+      <button class="seg-btn" data-sort="urgencia" onclick="setSort('urgencia')">Urgência</button>
+      <button class="seg-btn" data-sort="custo-asc" onclick="setSort('custo-asc')">Custo ↑</button>
+      <button class="seg-btn" data-sort="custo-desc" onclick="setSort('custo-desc')">Custo ↓</button>
+      <button class="seg-btn" data-sort="nome" onclick="setSort('nome')">A–Z</button>
+    </div>
+    <label class="toggle-wrap">
+      <span>Adquiridos</span>
+      <label class="ios-toggle">
+        <input type="checkbox" id="showAcq" onchange="render()">
+        <div class="ios-toggle-track"></div>
+        <div class="ios-toggle-knob"></div>
+      </label>
+    </label>
+  </div>
+
+  <!-- LIST -->
+  <div class="list-head">
+    <div>#</div><div>Item</div><div>Categoria</div>
+    <div>Urg.</div><div>Des.</div><div>Imp.</div>
+    <div>Score</div><div></div>
+  </div>
+  <div id="list"></div>
+
+</div><!-- /app -->
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Editar item</h2>
+
+    <div class="form-grid full" style="margin-bottom:10px">
+      <div class="field">
+        <div class="field-label">Nome</div>
+        <input id="e-nome" type="text">
+      </div>
+    </div>
+    <div class="form-grid two">
+      <div class="field">
+        <div class="field-label">Categoria</div>
+        <select id="e-cat">
+          <option>Tech</option><option>Casa</option><option>Vestuário</option>
+          <option>Saúde</option><option>Lazer</option><option>Trabalho</option>
+          <option>Áudio</option><option>Esporte</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">Custo (R$)</div>
+        <input id="e-custo" type="number" min="0">
+      </div>
+      <div class="field">
+        <div class="field-label">Nota</div>
+        <input id="e-nota" type="text">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="modal-sliders">
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Urgência</span>
+          <span class="slider-badge" id="eb-urg">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ef-urg" style="width:44.4%"></div>
+          <input type="range" id="e-urgencia" min="1" max="10" value="5"
+            oninput="syncSlider('e','urg',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span>pode esperar</span><span>moderada</span><span>preciso logo</span>
+        </div>
+      </div>
+
+      <div class="slider-field">
+        <div class="slider-header">
+          <span class="slider-name">Desejo</span>
+          <span class="slider-badge" id="eb-des">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ef-des" style="width:44.4%"></div>
+          <input type="range" id="e-desejo" min="1" max="10" value="5"
+            oninput="syncSlider('e','des',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span>seria legal</span><span>quero muito</span><span>preciso disso</span>
+        </div>
+      </div>
+
+      <div class="slider-field" style="grid-column:1/-1">
+        <div class="slider-header">
+          <span class="slider-name">Impacto na rotina</span>
+          <span class="slider-badge" id="eb-imp">5<span class="denom">/10</span></span>
+        </div>
+        <div class="slider-track-wrap">
+          <div class="track-fill" id="ef-imp" style="width:44.4%"></div>
+          <input type="range" id="e-impacto" min="1" max="10" value="5"
+            oninput="syncSlider('e','imp',this.value,'--blue')">
+        </div>
+        <div class="slider-labels">
+          <span>cosmético</span><span>melhora bastante</span><span>muda o jogo</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const KEY = 'wishlist_celo_v3';
+let items = [];
+let filter = 'Todos';
+let sort = 'score';
+let editId = null;
+
+const CAT = {
+  Tech:      { bg:'#e8f0fb', color:'#1a56c4' },
+  Casa:      { bg:'#e8f5ec', color:'#1a7a3a' },
+  Vestuário: { bg:'#fce8f3', color:'#c41a7a' },
+  Saúde:     { bg:'#fff0e6', color:'#c46a1a' },
+  Lazer:     { bg:'#f0e8fc', color:'#7a1ac4' },
+  Trabalho:  { bg:'#f0f0f0', color:'#555'    },
+  Áudio:     { bg:'#fdf5e6', color:'#a07020' },
+  Esporte:   { bg:'#e6faf7', color:'#1a8070' },
+  Outro:     { bg:'#f5f5f5', color:'#888'    },
+};
+
+function costPeso(c) {
+  if (!c || c<=0) return 0;
+  if (c<100)   return 1; if (c<300)   return 2; if (c<600)  return 3;
+  if (c<1000)  return 4; if (c<2000)  return 5; if (c<3500) return 6;
+  if (c<5000)  return 7; if (c<8000)  return 8; if (c<15000)return 9;
+  return 10;
+}
+
+function calcScore(it) {
+  return Math.max(0,
+    it.urgencia*0.35 + it.desejo*0.30 + it.impacto*0.25 - costPeso(it.custo)*0.10
+  );
+}
+
+/* ── SLIDER SYNC ── */
+function syncSlider(prefix, key, val, _) {
+  val = parseInt(val);
+  const badge = document.getElementById(prefix+'b-'+key);
+  if (badge) badge.innerHTML = val + '<span class="denom">/10</span>';
+  const fill  = document.getElementById(prefix+'f-'+key);
+  if (fill)  fill.style.width = ((val-1)/9*100) + '%';
+  // label highlight (form only)
+  if (prefix === 'f') {
+    const zone = val<=3?0:val<=7?1:2;
+    [0,1,2].forEach(i => {
+      const el = document.getElementById('fl-'+key+'-'+i);
+      if (el) el.classList.toggle('lit', i===zone);
+    });
+  }
+}
+
+function syncCostSlider(prefix) {
+  const c = parseFloat(document.getElementById(prefix+'-custo').value) || 0;
+  const p = costPeso(c);
+  if (prefix === 'f') {
+    const badge = document.getElementById('fb-cst');
+    const fill  = document.getElementById('ff-cst');
+    if (p===0) {
+      badge.innerHTML = '—';
+      badge.style.cssText = 'background:rgba(0,0,0,0.05);color:var(--muted)';
+      fill.style.width = '0%';
+    } else {
+      badge.innerHTML = p + '<span class="denom">/10</span>';
+      badge.style.cssText = '';
+      fill.style.width = ((p-1)/9*100) + '%';
+    }
+  }
+}
+
+/* ── CRUD ── */
+function load() {
+  try { items = JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e){ items=[]; }
+  initSliders();
+  render();
+}
+
+function save() { localStorage.setItem(KEY, JSON.stringify(items)); }
+
+function initSliders() {
+  ['urg','des','imp'].forEach(k => syncSlider('f',k,5,''));
+}
+
+function addItem() {
+  const nome = document.getElementById('f-nome').value.trim();
+  if (!nome) { document.getElementById('f-nome').focus(); return; }
+  items.push({
+    id: Date.now(),
+    nome,
+    categoria: document.getElementById('f-cat').value,
+    custo: parseFloat(document.getElementById('f-custo').value)||0,
+    nota: document.getElementById('f-nota').value.trim(),
+    urgencia: +document.getElementById('f-urgencia').value,
+    desejo:   +document.getElementById('f-desejo').value,
+    impacto:  +document.getElementById('f-impacto').value,
+    acquired: false,
+    createdAt: new Date().toISOString()
+  });
+  save(); resetForm(); render();
+}
+
+function resetForm() {
+  ['f-nome','f-nota'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-custo').value='';
+  document.getElementById('f-urgencia').value=5;
+  document.getElementById('f-desejo').value=5;
+  document.getElementById('f-impacto').value=5;
+  ['urg','des','imp'].forEach(k=>syncSlider('f',k,5,''));
+  syncCostSlider('f');
+}
+
+function toggleAcq(id) {
+  const it=items.find(i=>i.id===id);
+  if(it){it.acquired=!it.acquired;save();render();}
+}
+
+function delItem(id) {
+  if(!confirm('Remover este item?'))return;
+  items=items.filter(i=>i.id!==id);save();render();
+}
+
+function openEdit(id) {
+  const it=items.find(i=>i.id===id); if(!it)return;
+  editId=id;
+  document.getElementById('e-nome').value=it.nome;
+  document.getElementById('e-cat').value=it.categoria;
+  document.getElementById('e-custo').value=it.custo||'';
+  document.getElementById('e-nota').value=it.nota||'';
+  document.getElementById('e-urgencia').value=it.urgencia;
+  document.getElementById('e-desejo').value=it.desejo;
+  document.getElementById('e-impacto').value=it.impacto;
+  syncSlider('e','urg',it.urgencia,'');
+  syncSlider('e','des',it.desejo,'');
+  syncSlider('e','imp',it.impacto,'');
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');editId=null;}
+
+function saveEdit() {
+  const it=items.find(i=>i.id===editId); if(!it)return;
+  it.nome=document.getElementById('e-nome').value.trim()||it.nome;
+  it.categoria=document.getElementById('e-cat').value;
+  it.custo=parseFloat(document.getElementById('e-custo').value)||0;
+  it.nota=document.getElementById('e-nota').value.trim();
+  it.urgencia=+document.getElementById('e-urgencia').value;
+  it.desejo=+document.getElementById('e-desejo').value;
+  it.impacto=+document.getElementById('e-impacto').value;
+  save();closeModal();render();
+}
+
+/* ── FILTERS / SORT ── */
+function setFilter(cat){
+  filter=cat;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.cat===cat));
+  render();
+}
+
+function setSort(s){
+  sort=s;
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===s));
+  render();
+}
+
+function updateChips(){
+  const cats=[...new Set(items.map(i=>i.categoria))].sort();
+  const wrap=document.getElementById('chips');
+  const existing=[...wrap.querySelectorAll('[data-cat]')].map(c=>c.dataset.cat);
+  cats.forEach(cat=>{
+    if(!existing.includes(cat)){
+      const c=document.createElement('span');
+      c.className='chip';c.dataset.cat=cat;c.textContent=cat;
+      c.onclick=()=>setFilter(cat);wrap.appendChild(c);
+    }
+  });
+  wrap.querySelectorAll('[data-cat]').forEach(c=>{
+    if(c.dataset.cat!=='Todos'&&!cats.includes(c.dataset.cat))c.remove();
+  });
+}
+
+/* ── RENDER ── */
+function render(){
+  const showAcq=document.getElementById('showAcq').checked;
+  let list=items.filter(i=>{
+    if(!showAcq&&i.acquired)return false;
+    if(filter!=='Todos'&&i.categoria!==filter)return false;
+    return true;
+  });
+  const fns={
+    score:(a,b)=>calcScore(b)-calcScore(a),
+    urgencia:(a,b)=>b.urgencia-a.urgencia,
+    'custo-asc':(a,b)=>(a.custo||0)-(b.custo||0),
+    'custo-desc':(a,b)=>(b.custo||0)-(a.custo||0),
+    nome:(a,b)=>a.nome.localeCompare(b.nome)
+  };
+  list.sort(fns[sort]||fns.score);
+
+  const active=items.filter(i=>!i.acquired);
+  const acqCount=items.filter(i=>i.acquired).length;
+  const totalCusto=active.reduce((s,i)=>s+(i.custo||0),0);
+  const top=[...active].sort((a,b)=>calcScore(b)-calcScore(a))[0];
+
+  document.getElementById('s-ativos').textContent=active.length;
+  document.getElementById('s-adq').textContent=acqCount;
+  document.getElementById('s-custo').textContent='R$ '+totalCusto.toLocaleString('pt-BR',{maximumFractionDigits:0});
+  document.getElementById('s-top').textContent=top?top.nome.substring(0,22)+(top.nome.length>22?'…':''):'—';
+  document.getElementById('headerDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'long'});
+
+  updateChips();
+
+  const container=document.getElementById('list');
+  if(list.length===0){
+    container.innerHTML=`<div class="empty"><div class="empty-icon">✦</div>${items.length===0?'Nenhum item ainda. Adicione o primeiro acima.':'Nenhum item para este filtro.'}</div>`;
+    return;
+  }
+
+  container.innerHTML=list.map((it,idx)=>{
+    const score=calcScore(it);
+    const cc=CAT[it.categoria]||CAT['Outro'];
+    const cp=costPeso(it.custo);
+    const isTop=idx===0&&!it.acquired;
+    return `<div class="item-card ${it.acquired?'acquired':''}" style="animation-delay:${idx*0.03}s">
+      <div class="rank ${isTop?'top':''}">${it.acquired?'✓':(idx+1)}</div>
+      <div>
+        <div class="item-name">${h(it.nome)}</div>
+        ${it.nota?`<div class="item-note">${h(it.nota)}</div>`:''}
+      </div>
+      <div><span class="cat-pill" style="background:${cc.bg};color:${cc.color}">${it.categoria}</span></div>
+      <div class="mini-col"><div class="mini-val">${it.urgencia}</div><div class="mini-track"><div class="mini-fill" style="width:${it.urgencia*10}%;background:rgb(0,113,227);opacity:0.7"></div></div></div>
+      <div class="mini-col"><div class="mini-val">${it.desejo}</div><div class="mini-track"><div class="mini-fill" style="width:${it.desejo*10}%;background:rgb(0,113,227);opacity:0.5"></div></div></div>
+      <div class="mini-col"><div class="mini-val">${it.impacto}</div><div class="mini-track"><div class="mini-fill" style="width:${it.impacto*10}%;background:rgb(0,113,227);opacity:0.35"></div></div></div>
+      <div class="score-col">
+        <div class="score-val">${score.toFixed(2)}</div>
+        <div class="score-cost">${it.custo?'R$'+it.custo.toLocaleString('pt-BR')+(cp?' · peso '+cp:''):'sem custo'}</div>
+        <div class="score-track"><div class="score-fill" style="width:${Math.min(100,(score/10)*100)}%"></div></div>
+      </div>
+      <div class="row-actions">
+        <button class="icon-btn check" onclick="toggleAcq(${it.id})" title="${it.acquired?'Desfazer':'Marcar adquirido'}">${it.acquired?'↩':'✓'}</button>
+        <button class="icon-btn" onclick="openEdit(${it.id})" title="Editar">✎</button>
+        <button class="icon-btn danger" onclick="delItem(${it.id})" title="Remover">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function h(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('f-nome').addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
+
+load();
+</script>
+</body>
+</html>
