@@ -8,12 +8,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-input[type=range]{-webkit-appearance:none;width:100%;height:2px;border-radius:2px;background:transparent;border:none;padding:0;outline:none;cursor:pointer;z-index:1;position:relative}
-input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:#e5e7eb}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;margin-top:-5px;background:white;border:1.5px solid #d1d5db;cursor:pointer;transition:border-color .12s}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;background:transparent;border:none;padding:0;outline:none;cursor:pointer;z-index:1;position:relative}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#e5e7eb}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;margin-top:-6px;background:white;border:1.5px solid #d1d5db;cursor:pointer;transition:border-color .12s}
 input[type=range]:hover::-webkit-slider-thumb{border-color:#0071e3}
-input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;border:1.5px solid #d1d5db;background:white}
-.track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:2px;border-radius:2px;background:#0071e3;pointer-events:none;z-index:0}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;border:1.5px solid #d1d5db;background:white}
+.track-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:3px;border-radius:2px;background:#0071e3;pointer-events:none;z-index:0}
 .cost-readonly .track-fill{background:#e5e7eb}
 .cost-readonly input[type=range]{pointer-events:none;opacity:0}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;-webkit-appearance:none}
@@ -66,7 +66,7 @@ input:focus,select:focus{border-color:#0071e3 !important;outline:none}
 <div id="appLayout" class="hidden h-screen flex overflow-hidden">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar w-60 min-w-[240px] bg-white border-r border-gray-200 flex flex-col h-screen overflow-y-auto flex-shrink-0">
+  <aside class="sidebar w-80 min-w-[320px] bg-white border-r border-gray-200 flex flex-col h-screen overflow-y-auto flex-shrink-0">
     <!-- Logo -->
     <div class="px-4 pt-5 pb-4 flex-shrink-0">
       <div class="flex items-center gap-2.5">
@@ -89,72 +89,72 @@ input:focus,select:focus{border-color:#0071e3 !important;outline:none}
     <div class="flex-1 px-3 py-2 flex flex-col gap-2.5 overflow-y-auto">
       <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-2 mt-1">Novo item</p>
 
-      <div><label class="block text-xs font-medium text-gray-500 mb-1">Nome</label>
-        <input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
+      <div><label class="block text-sm font-medium text-gray-500 mb-1.5">Nome</label>
+        <input id="f-nome" type="text" placeholder="ex: iPhone 17 Pro…" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
 
       <div class="grid grid-cols-2 gap-2">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Categoria</label>
-          <select id="f-cat" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs cursor-pointer transition-all">
+        <div><label class="block text-sm font-medium text-gray-500 mb-1.5">Categoria</label>
+          <select id="f-cat" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer transition-all">
             <option>Tech</option><option>Casa</option><option>Vestuário</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Áudio</option><option>Esporte</option><option>Outro</option>
           </select></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1">Custo (R$)</label>
-          <input id="f-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
+        <div><label class="block text-sm font-medium text-gray-500 mb-1.5">Custo (R$)</label>
+          <input id="f-custo" type="text" inputmode="numeric" placeholder="0,00" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
       </div>
 
-      <div><label class="block text-xs font-medium text-gray-500 mb-1">Nota / link</label>
-        <input id="f-nota" type="text" placeholder="opcional…" class="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs transition-all"></div>
+      <div><label class="block text-sm font-medium text-gray-500 mb-1.5">Nota / link</label>
+        <input id="f-nota" type="text" placeholder="opcional…" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm transition-all"></div>
 
       <div class="h-px bg-gray-100"></div>
 
       <!-- Urgência -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500">Urgência</span>
-          <span id="fb-urg" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
+          <span class="text-sm font-medium text-gray-500">Urgência</span>
+          <span id="fb-urg" class="text-sm font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
-        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-urg" style="width:44.4%"></div><input type="range" id="f-urgencia" min="1" max="10" value="5" oninput="syncSlider('f','urg',this.value)"></div>
+        <div class="flex justify-between text-xs text-gray-300"><span id="fh-urg-0">pode esperar</span><span id="fh-urg-1">moderada</span><span id="fh-urg-2">preciso logo</span></div>
       </div>
 
       <!-- Desejo -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500">Desejo</span>
-          <span id="fb-des" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
+          <span class="text-sm font-medium text-gray-500">Desejo</span>
+          <span id="fb-des" class="text-sm font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
-        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-des" style="width:44.4%"></div><input type="range" id="f-desejo" min="1" max="10" value="5" oninput="syncSlider('f','des',this.value)"></div>
+        <div class="flex justify-between text-xs text-gray-300"><span id="fh-des-0">seria legal</span><span id="fh-des-1">quero muito</span><span id="fh-des-2">preciso disso</span></div>
       </div>
 
       <!-- Impacto -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500">Impacto</span>
-          <span id="fb-imp" class="text-xs font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
+          <span class="text-sm font-medium text-gray-500">Impacto</span>
+          <span id="fb-imp" class="text-sm font-semibold" style="color:#0071e3">5<span class="text-gray-300 font-normal">/10</span></span>
         </div>
-        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
-        <div class="flex justify-between text-[10px] text-gray-300"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-imp" style="width:44.4%"></div><input type="range" id="f-impacto" min="1" max="10" value="5" oninput="syncSlider('f','imp',this.value)"></div>
+        <div class="flex justify-between text-xs text-gray-300"><span id="fh-imp-0">cosmético</span><span id="fh-imp-1">melhora muito</span><span id="fh-imp-2">muda o jogo</span></div>
       </div>
 
       <!-- Peso custo -->
-      <div class="flex flex-col gap-1 cost-readonly">
+      <div class="flex flex-col gap-1.5 cost-readonly">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500">Peso do custo</span>
-          <span id="fb-cst" class="text-xs font-semibold text-gray-300">—</span>
+          <span class="text-sm font-medium text-gray-500">Peso do custo</span>
+          <span id="fb-cst" class="text-sm font-semibold text-gray-300">—</span>
         </div>
-        <div class="relative h-3 flex items-center"><div class="track-fill" id="ff-cst" style="width:0%;background:#e5e7eb"></div><input type="range" min="1" max="10" value="1" disabled></div>
-        <div class="text-[10px] text-gray-300">calculado pelo valor · penaliza o score</div>
+        <div class="relative h-4 flex items-center"><div class="track-fill" id="ff-cst" style="width:0%;background:#e5e7eb"></div><input type="range" min="1" max="10" value="1" disabled></div>
+        <div class="text-xs text-gray-300">calculado pelo valor · penaliza o score</div>
       </div>
 
-      <div class="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-[10px] text-gray-400 leading-relaxed">
+      <div class="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-400 leading-relaxed">
         <span class="font-semibold text-gray-500">Score</span> = Urg×0.35 + Des×0.30 + Imp×0.25 − Cst×0.10
       </div>
 
-      <button id="btn-add" onclick="addItem()" class="w-full text-xs font-semibold text-white rounded-lg py-2 flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-60" style="background:#0071e3">
-        <i data-lucide="plus" style="width:13px;height:13px"></i>Adicionar item
+      <button id="btn-add" onclick="addItem()" class="w-full text-sm font-semibold text-white rounded-lg py-2.5 flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60" style="background:#0071e3">
+        <i data-lucide="plus" style="width:14px;height:14px"></i>Adicionar item
       </button>
-      <button onclick="resetForm()" class="w-full text-xs font-medium text-gray-500 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg py-2 flex items-center justify-center gap-1.5 transition-all">
-        <i data-lucide="x" style="width:12px;height:12px"></i>Limpar
+      <button onclick="resetForm()" class="w-full text-sm font-medium text-gray-500 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg py-2.5 flex items-center justify-center gap-2 transition-all">
+        <i data-lucide="x" style="width:13px;height:13px"></i>Limpar
       </button>
     </div>
 
