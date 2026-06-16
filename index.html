@@ -444,13 +444,15 @@ function showLogin() {
 }
 
 // INITIAL_SESSION fires on page load with stored session — handles refresh too
-sb.auth.onAuthStateChange(async (event, session) => {
+sb.auth.onAuthStateChange((event, session) => {
   console.log('[auth]', event, '| user:', session?.user?.email ?? 'none', '| appLoaded:', appLoaded);
   if (session?.user && !appLoaded) {
     appLoaded = true;
     showApp(session.user);
     initSliders();
-    await loadItems();
+    // Defer outside the auth callback — Supabase blocks DB requests made
+    // inside onAuthStateChange while it finishes processing the event
+    setTimeout(loadItems, 0);
   } else if (!session && event === 'SIGNED_OUT') {
     appLoaded = false;
     showLogin();
